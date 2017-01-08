@@ -48,21 +48,24 @@ class Resistance:
     novotes = []
     current = None
     channel = None
-    def reset(self):
-        self.players = []
-        self.votes = []
-        self.novotes = []
+    missioneers = [0.3, 0.5, 0.7, 0.1]
+    missionIndex = 0
+    failPoints = 0
+    successPoints = 0
     def setPlayers(self, players):
         self.players = players
+        self.votes = []
+        self.novotes = []
+        self.missionIndex = 0
     def giveRoles(self):
         for player in self.players:
-            self.roles[player] = random.choice(["good", "bad"])
+            self.roles[player] = random.choice(["resistance", "spy"])
         self.current = random.choice(self.players)
         self.state = "assign"
     def sayPlayers(self, players):
         output = ""
         for player in players:
-            output += player.name + " - " + self.roles[player] + "\n"
+            output += player.name + "\n"
         return output
     def vote(self, voter):
         if voter in self.players and voter not in self.votes:
@@ -76,6 +79,11 @@ class Resistance:
         if len(self.players) % 2 == 0:
             return len(self.votes) >= len(self.players)/2
         return len(self.votes) > len(self.players)/2
+    def missioneerReq(self):
+        req = int(self.missioneers[self.missionIndex]*float(len(self.players)))
+        if req == 0:
+            return 1
+        return req
     async def doMission(self, doer):
         if doer in self.missioned:
             self.votes.append(doer)
@@ -87,16 +95,26 @@ class Resistance:
     async def checkSuccess(self, doer):
         if len(self.votes) + len(self.novotes) >= len(self.missioned):
             if len(self.novotes) > 0:
-                await client.send_message(self.channel, "mission fail.")
+                await client.send_message(self.channel, "Mission Fail.")
+                await client.send_message(self.channel, "fails: {0}, success: {1}".format(self.failPoints, self.successPoints))
+                self.failPoints += 1
             else:
-                await client.send_message(self.channel, "mission success.")
-            await self.startAssign()
+                await client.send_message(self.channel, "Mission Success!")
+                self.successPoints += 1
+            self.missionIndex += 1
+            await client.send_message(self.channel, "fails: {0}, success: {1}".format(self.failPoints, self.successPoints))
+            if self.missionIndex >= len(self.missioneers):
+                await client.send_message(self.channel, "Game End.")
+                self.missionIndex = 0
+            else:
+                await self.startAssign()
     async def startAssign(self):
         self.votes = []
         self.novotes = []
         self.state = "assign"
         self.current = random.choice(self.players)
-        await client.send_message(self.channel, "new mission! " + self.current.name + " is assigning.\n use chen assign")
+        await client.send_message(self.channel, "Mission {0}".format(self.missionIndex) + self.current.name + " is assigning.\n use chen assign")
+        await client.send_message(self.channel, "you need to assign {0}".format(self.missioneerReq()))
     async def startVote(self):
         self.votes = []
         self.novotes = []
@@ -107,7 +125,7 @@ class Resistance:
         self.novotes = []
         self.state = "mission"
         for player in self.missioned:
-            if self.roles[player] == "bad":
+            if self.roles[player] == "spy":
                 await client.send_message(player, "are you success? y/n")
                 async def func(yesno):
                     if yesno:
@@ -121,13 +139,13 @@ class Resistance:
 
     async def ask(self, message):
         if message.content.startswith("chen start game"):
-            self.reset()
             self.channel = message.channel
             mentioned = message.mentions
             self.setPlayers(mentioned)
             self.giveRoles()
             for player in self.players:
-                await client.send_message(player, "you are " + self.roles[player])
+                await client.send_message(player, "You are " + self.roles[player])
+            await client.send_message(message.channel, "players:\n" + self.sayPlayers(self.players))
             await self.startAssign()
         if message.content.startswith("chen assign"):
             if self.state == "assign":
@@ -137,19 +155,18 @@ class Resistance:
                         if mention not in self.players:
                             await client.send_message(message.channel, "pls, players only")
                             return
-                    if len(message.mentions) <= 0:
-                        await client.send_message(message.channel, "nobody is assigned. pls do it again honk")
+                    if len(message.mentions) != self.missioneerReq():
+                        await client.send_message(message.channel, "pls do it again honk")
                         return
-
                     await client.send_message(message.channel, "roger!")
-                    await client.send_message(message.channel, "mission:\n" + self.sayPlayers(self.missioned))
+                    await client.send_message(message.channel, "Mission Members:\n" + self.sayPlayers(self.missioned))
                     await self.startVote()
         if message.content.startswith("chen yes"):
             if self.state == "vote":
                 if self.vote(message.author):
                     await client.send_message(message.channel, "roger!")
                     if self.checkMission():
-                        await client.send_message(message.channel, "mission push!")
+                        await client.send_message(message.channel, "Mission Start!")
                         await self.pushMission()
                 else:
                     await client.send_message(message.channel, "no")
@@ -158,25 +175,23 @@ class Resistance:
                 if self.vote(message.author):
                     await client.send_message(message.channel, "roger!")
                     if self.checkUnMission():
-                        await client.send_message(message.channel, "vote failed.")
+                        await client.send_message(message.channel, "Mission Vetoed...")
                         await self.startAssign()
                 else:
                     await client.send_message(message.channel, "no")
 
-        if message.content.startswith("chen game?"):
-            await client.send_message(message.channel, "game is in " + self.state + " state.")
+        if message.content.startswith("chen status"):
+            await client.send_message(message.channel, "Resistance game is in " + self.state + " state.")
 
 class MainCommand:
     async def ask(self, message):
         if message.content.startswith("chen pls honk"):
             await client.send_message(message.channel, "honk")
         elif message.content.startswith("chen pls die"):
-            matcher = re.match(r"chen pls die (.+)", message.content)
-            if matcher:
-                if matcher.group(1) == stores.killer:
-                    await client.send_message(message.channel, "brb going to Gensokyo")
-                    await client.logout()
-                    sys.exit()
+            if message.author.name == "tastelikenyan":
+                await client.send_message(message.channel, "brb going to Gensokyo")
+                await client.logout()
+                sys.exit()
             await client.send_message(message.channel, "no")
 
 stores = Stores()
