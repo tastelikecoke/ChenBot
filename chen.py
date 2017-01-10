@@ -10,6 +10,7 @@ import re
 
 class Stores:
     listeners = []
+    localization = "en"
     def accessFile(self):
         with open("voltexes.json", "r") as voltexesFile:
             self.courses = json.loads(voltexesFile.read())
@@ -20,6 +21,23 @@ class Stores:
         self.mainCommand = MainCommand()
         self.resistance = Resistance()
         self.killer = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(2))
+    def localize(self, string):
+        if self.localization == "jp":
+            if string == "Don't let your dreams be memes":
+                return "ミームを夢になれなきゃ"
+            if string == "honk":
+                return "パフ"
+            if string == "HONK":
+                return "パーーフ"
+            if string == "roger!":
+                return "ようかい！"
+            if string == "no":
+                return "ノー"
+            if string == "You get {0}.":
+                return "{0}をもらう"
+            if string == "brb going to Gensokyo":
+                return "死にます！さよなら"
+        return string
     def listen(self, user, yes, no, func):
         async def isYes(message):
             if message.author == user:
@@ -190,25 +208,31 @@ class Resistance:
 class MainCommand:
     async def ask(self, message):
         if message.content.startswith("chen pls honk"):
-            await client.send_message(message.channel, "honk")
+            await client.send_message(message.channel, stores.localize("honk"))
             await asyncio.sleep(10)
-            await client.send_message(message.channel, "HONK")
+            await client.send_message(message.channel, stores.localize("HONK"))
+        elif message.content.startswith("chen english pls"):
+            stores.localization = "en"
+            await client.send_message(message.channel, stores.localize("roger!"))
+        elif message.content.startswith("chen japanese pls"):
+            stores.localization = "jp"
+            await client.send_message(message.channel, stores.localize("roger!"))
         elif message.content.startswith("chen pls help"):
             commands = ["* chen pls honk", "* chen pls help", "* chen inspire me", "* chen pls die", "* chen start game", "* chen roll <number>", "* chen pat", "* chen lewd"]
-            await client.send_message(message.channel, "Commands are:")
+            await client.send_message(message.channel, stores.localize("Commands are:"))
             await client.send_message(message.channel, '\n'.join(commands))
         elif message.content.startswith("chen inspire me"):
-            await client.send_message(message.channel, "”Ｄｏｎ’ｔ　ｌｅｔ　ｙｏｕｒ　ｄｒｅａｍｓ　ｂｅ　ｍｅｍｅｓ”")
+            await client.send_message(message.channel, stores.localize("Don't let your dreams be memes"))
         elif message.content.startswith("chen roll"):
             matcher = re.match("chen roll (\d+)", message.content)
             if matcher:
-                await client.send_message(message.channel, "You get {0}.".format(random.randint(1, int(matcher.group(1))+1)))
+                await client.send_message(message.channel, stores.localize("You get {0}.").format(random.randint(1, int(matcher.group(1))+1)))
         elif message.content.startswith("chen pls die"):
             if message.author.name == "tastelikenyan":
-                await client.send_message(message.channel, "brb going to Gensokyo")
+                await client.send_message(message.channel, stores.localize("brb going to Gensokyo"))
                 await client.logout()
                 sys.exit()
-            await client.send_message(message.channel, "no")
+            await client.send_message(message.channel, stores.localize("no"))
         elif message.content.startswith("chen pat"):
             await client.send_message(message.channel, "http://vignette4.wikia.nocookie.net/touhouanime/images/3/34/1BdaF.jpg")
         elif message.content.startswith("chen lewd"):
