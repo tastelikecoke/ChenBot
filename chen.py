@@ -7,6 +7,7 @@ import string
 import sys
 import traceback
 import re
+from drunk import Drunk
 from resistance import Resistance
 
 class Stores:
@@ -70,8 +71,18 @@ class MainCommand:
             stores.localization = "jp"
             await client.send_message(message.channel, stores.localize("roger!"))
         elif message.content.startswith("chen pls help"):
-            commands = ["* chen pls honk", "* chen pls help", "* chen inspire me", "* chen pls die", "* chen start game", "* chen roll <number>", "* chen pat", "* chen lewd"]
-            await client.send_message(message.channel, stores.localize("Commands are:"))
+            commands = [
+                stores.localize("Commands are:"),
+                "* chen pls honk",
+                "* chen pls help",
+                "* chen inspire me",
+                "* chen pls die",
+                "* chen start game",
+                "* chen roll <number>",
+                "* chen pat",
+                "* chen lewd",
+            ]
+            await client.send_message(message.channel, )
             await client.send_message(message.channel, '\n'.join(commands))
         elif message.content.startswith("chen inspire me"):
             await client.send_message(message.channel, stores.localize("Don't let your dreams be memes"))
@@ -93,6 +104,20 @@ class MainCommand:
             await client.send_message(message.channel, "http://orig03.deviantart.net/115a/f/2012/266/9/9/honk_by_cybeam100-d5fnxir.jpg")
         elif message.content.startswith("chen voltex"):
             await client.send_message(message.channel, "play {}".format(random.choice(stores.courses)["name"]))
+        elif message.content.startswith("chen sing"):
+            await client.send_message(message.channel, Drunk().markov(random.randint(10,20)))
+        elif message.content.startswith("chen pls sing"):
+            matcher = re.match(r"chen pls sing (\w+) (\w+)", message.content)
+            if matcher:
+                await client.send_message(message.channel, Drunk().markov(random.randint(10,20), matcher.group(1), matcher.group(2)))
+        elif message.content.startswith("chen pls critique"):
+            await client.send_message(message.channel, random.choice([
+                "try fixing the anatomy",
+                "study more references",
+                "there's a bit of a problem in the hands",
+                "the pose is a bit awkward",
+            ]))
+
 
 client = discord.Client()
 stores = Stores(client)
