@@ -69,7 +69,7 @@ class MainCommand:
         elif message.content.startswith("chen fr7w say"):
             matcher = re.match(r"chen fr7w say (.+)", message.content)
             if matcher:
-                await client.send_message(stores.storedChannel, matcher.group(0))
+                await client.send_message(stores.storedChannel, matcher.group(1))
             await client.send_message(message.channel, stores.localize("HONK"))
         elif message.content.startswith("chen english pls"):
             stores.localization = "en"
