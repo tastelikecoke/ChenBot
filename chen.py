@@ -7,6 +7,7 @@ import string
 import sys
 import traceback
 import re
+import difflib
 from drunk import Drunk
 from resistance import Resistance
 
@@ -18,6 +19,8 @@ class Stores:
             self.courses = json.loads(voltexesFile.read())
         with open("secrets.json", "r") as secretsFile:
             self.secrets = json.loads(secretsFile.read())
+        with open("asdata.json", "r") as asDataFile:
+            self.asData = json.loads(asDataFile.read())
     def __init__(self, client):
         self.accessFile()
         self.mainCommand = MainCommand()
@@ -64,12 +67,18 @@ class MainCommand:
             await client.send_message(message.channel, stores.localize("honk"))
             await asyncio.sleep(10)
             await client.send_message(message.channel, stores.localize("HONK"))
-        elif message.content.startswith("chen hink"):
-            stores.storedChannel = message.channel
-        elif message.content.startswith("chen fr7w say"):
-            matcher = re.match(r"chen fr7w say (.+)", message.content)
+        elif message.content.startswith("chen stalk"):
+            matcher = re.match(r"chen stalk (.+)", message.content)
             if matcher:
-                await client.send_message(stores.storedChannel, matcher.group(1))
+                searchkey = matcher.group(1)
+                if searchkey in stores.asData:
+                    await client.send_message(message.channel, stores.asData[searchkey])
+                else:
+                    closests = difflib.get_close_matches(searchkey, stores.asData.keys())
+                    if len(closests) > 0:
+                        await client.send_message(message.channel, "closest match: "+closests[0]+"\n"+stores.asData[closests[0]])
+                    else:
+                        await client.send_message(message.channel, "Can't find that guy honk")
         elif message.content.startswith("chen english pls"):
             stores.localization = "en"
             await client.send_message(message.channel, stores.localize("roger!"))
