@@ -10,6 +10,7 @@ import re
 import difflib
 from drunk import Drunk
 from resistance import Resistance
+from lexicant import Lexicant
 
 class Stores:
     storedChannel = None
@@ -21,10 +22,13 @@ class Stores:
             self.secrets = json.loads(secretsFile.read())
         with open("asdata.json", "r") as asDataFile:
             self.asData = json.loads(asDataFile.read())
+        with open("words.txt", "r") as wordDataFile:
+            self.wordData = wordDataFile.read()
     def __init__(self, client):
         self.accessFile()
         self.mainCommand = MainCommand()
         self.resistance = Resistance(client.send_message)
+        self.lexicant = Lexicant(client.send_message, self.wordData)
         self.killer = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(2))
     def localize(self, val):
         if self.localization == "jp":
@@ -46,6 +50,7 @@ class Stores:
     async def ask(self, message):
         await self.mainCommand.ask(message)
         await self.mainCommand.askResistance(message)
+        await self.mainCommand.askLexicant(message)
 
 class MainCommand:
     async def askResistance(self, message):
@@ -62,6 +67,17 @@ class MainCommand:
         if message.content.startswith("chen fail"):
             await stores.resistance.failMission(message.author)
 
+    async def askLexicant(self, message):
+        if message.content.startswith("chen startlex"):
+            matcher = re.match(r"chen startlex (.+)", message.content)
+            if matcher:
+                await stores.lexicant.begin(matcher.group(1), message.channel)
+        if message.content.startswith("chen lex"):
+            matcher = re.match(r"chen lex (.+)", message.content)
+            if matcher:
+                await stores.lexicant.append(matcher.group(1))
+        if message.content.startswith("chen seerit"):
+            await stores.lexicant.seerit()
     async def ask(self, message):
         if message.content.startswith("chen pls honk"):
             await client.send_message(message.channel, stores.localize("honk"))
