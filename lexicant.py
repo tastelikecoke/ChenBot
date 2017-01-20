@@ -32,6 +32,9 @@ class Lexicant:
         if len(word) != len(self.word)+1:
             await self.sendMessage(self.channel, "not valid length.")
             return
+        if word not in self.word:
+            await self.sendMessage(self.channel, "word doesnt match.")
+            return
         if word not in self.words:
             await self.sendMessage(self.channel, "not part of a word.")
             return
