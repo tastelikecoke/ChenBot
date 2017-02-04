@@ -103,12 +103,12 @@ class MainCommand:
                     stores.prefix))
     
         elif chenCommand.startswith("lex start"):
-            matcher = re.match(stores.prefix + r"startlex (.+)", message.content)
+            matcher = re.match(r"lex start (.+)", chenCommand)
             if matcher:
                 await stores.lexicant.begin(matcher.group(1), message.channel)
 
         elif chenCommand.startswith("lex"):
-            matcher = re.match(stores.prefix + r"lex (.+)", message.content)
+            matcher = re.match(r"lex (.+)", chenCommand)
             if matcher:
                 await stores.lexicant.append(matcher.group(1))
 
