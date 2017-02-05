@@ -23,6 +23,8 @@ class Stores:
             self.secrets = json.loads(secretsFile.read())
         with open("asdata.json", "r") as asDataFile:
             self.asData = json.loads(asDataFile.read())
+        with open("scores.json", "r") as scoreDataFile:
+            self.scoreData = json.loads(scoreDataFile.read())
         with open("words.txt", "r") as wordDataFile:
             self.wordData = wordDataFile.read()
     def __init__(self, client):
@@ -34,6 +36,8 @@ class Stores:
     def store(self):
         with open("asdata.json", "w") as asDataFile:
             asDataFile.write(json.dumps(self.asData))
+        with open("scores.json", "w") as scoreDataFile:
+            scoreDataFile.write(json.dumps(self.scoreData))
 
     def localize(self, val):
         if self.localization == "jp":
@@ -137,6 +141,7 @@ class MainCommand:
                 '**{prefix}sing** let chen sing',
                 '**{prefix}critique** critique arts',
                 '**{prefix}prompt** drawing prompts',
+                '**{prefix}score** store scores',
             ]
             output = '\n'.join(commands).replace('{prefix}', stores.prefix)
             await client.send_message(message.channel, output)
@@ -272,6 +277,30 @@ class MainCommand:
                 "doing a selfie"
             ])
             await client.send_message(message.channel, "{0} {1} year old {2} {3}".format(hairness, age, typing, action))
+        
+        elif chenCommand.startswith("score"):
+            matcher = re.match(r"score ([0-9]+) (.+)", chenCommand)
+            if matcher:
+                score = int(matcher.group(1))
+                song = matcher.group(2)
+                if song not in stores.scoreData:
+                    stores.scoreData[song] = {}
+                stores.scoreData[song][message.author.name] = score
+                stores.store()
+                await client.send_message(message.channel, "{0}'s score of {1} in {2} stored.".format(message.author.name, score, song))
+                return
+            matcher = re.match(r"score (.+)", chenCommand)
+            if matcher:
+                song = matcher.group(1)
+                if song in stores.scoreData:
+                    output = ""
+                    scores = stores.scoreData[song]
+                    for scorer in scores:
+                        output = "{0}: {1}".format(scorer, scores[scorer])
+                    await client.send_message(message.channel, output)
+                else:
+                    await client.send_message(message.channel, "no scores honk.")
+                return
 
 client = discord.Client()
 stores = Stores(client)
