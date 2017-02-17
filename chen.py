@@ -13,6 +13,7 @@ import datetime
 from drunk import Drunk
 from resistance import Resistance
 from lexicant import Lexicant
+from charade import Charade
 
 class Stores:
     storedChannel = None
@@ -32,6 +33,7 @@ class Stores:
         self.mainCommand = MainCommand()
         self.resistance = Resistance(client.send_message)
         self.lexicant = Lexicant(client.send_message, self.wordData)
+        self.charade = Charade(client.send_message, self.wordData.split("\n"))
         self.killer = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(2))
     def store(self):
         with open("asdata.json", "w") as asDataFile:
@@ -59,9 +61,22 @@ class Stores:
     async def ask(self, message):
         await self.mainCommand.ask(message)
         await self.mainCommand.askResistance(message)
+        await self.mainCommand.askCharade(message)
         await self.mainCommand.askLexicant(message)
 
 class MainCommand:
+    async def askCharade(self, message):
+        chenCommand = ""
+        matcher = re.match(stores.prefix + r"(.+)", message.content)
+        if matcher:
+            chenCommand = matcher.group(1)
+        
+        if chenCommand.startswith("charades"):
+            await stores.charade.begin(message.author, message.channel)
+        
+        if stores.charade.state == "game":
+            await stores.charade.guess(str.lower(message.content), message.author)
+
     async def askResistance(self, message):
         chenCommand = ""
         matcher = re.match(stores.prefix + r"(.+)", message.content)
@@ -118,6 +133,7 @@ class MainCommand:
 
         if chenCommand.startswith("lex sirit"):
             await stores.lexicant.seerit()
+
 
     async def ask(self, message):
         chenCommand = ""
