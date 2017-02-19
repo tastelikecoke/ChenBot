@@ -3,11 +3,9 @@ import random
 import json
 import string
 import sys
-import traceback
 import re
 import difflib
 import urllib
-import datetime
 
 class Honker:
     """ command holder """
@@ -32,7 +30,7 @@ class Honker:
             all_data[self.server.id] = {"prefix": "!chen "}
             with open("data/data.json", "w") as data_file:
                 data_file.write(json.dumps(all_data))
-    
+
     def save_only(self):
         all_data = {}
         with open("data/data.json", "r") as data_file:
@@ -67,15 +65,12 @@ class Honker:
                 '**{prefix}critique** critique arts',
                 '**{prefix}prompt** drawing prompts',
                 '**{prefix}prefix \"<prefix>\"** change prefix',
+                '**{prefix}stalk <user>** to learn about users',
+                '**{prefix}keep <user> <data>** to keep data about users',
                 ' ',
                 '**UNAVAILABLE**',
                 '**{prefix}resistance help** for the resistance game',
                 '**{prefix}lex help** for the lexicant game',
-                '**{prefix}stalk** to learn about users',
-                '**{prefix}remember** to learn about users',
-                '**{prefix}lang** to switch languages',
-                '**{prefix}sing** let chen sing',
-                '**{prefix}score** store scores',
             ]
             output = '\n'.join(commands).replace('{prefix}', self.prefix)
             await self.client.send_message(message.channel, output)
@@ -177,46 +172,42 @@ class Honker:
                 self.save_only()
 
                 await self.client.send_message(message.channel,\
-                    "new prefix is {0}".format(self.prefix)
-                )
+                    "new prefix is {0}".format(self.prefix))
 
+        elif chen_command.startswith("stalk"):
+            if "keep" not in self.data:
+                self.data["keep"] = {}
+            matcher = re.match(r"stalk (.+)", chen_command)
+            if matcher:
+                searchkey = matcher.group(1)
+                if searchkey in self.data["keep"]:
+                    await self.client.send_message(message.channel, self.data["keep"][searchkey])
+                else:
+                    closests = difflib.get_close_matches(searchkey, self.data["keep"].keys())
+                    if len(closests) > 0:
+                        await self.client.send_message(message.channel,\
+                            "closest match: {0}:\n{1}".format(\
+                                closests[0], self.data["keep"][closests[0]]))
+                    else:
+                        await self.client.send_message(message.channel, "Can't find honk")
+            else:
+                await self.client.send_message(message.channel,\
+                    "Invalid command. How to use: e.g. !chen stalk username")
 
-    # async def ask(self, message):
-    #     chenCommand = ""
-    #     matcher = re.match(stores.prefix + r"(.+)", message.content)
-    #     if matcher:
-    #         chenCommand = matcher.group(1)
-
-
-    #     elif chenCommand.startswith("stalk"):
-    #         matcher = re.match(r"stalk (.+)", chenCommand)
-    #         if matcher:
-    #             searchkey = matcher.group(1)
-    #             if searchkey in stores.asData:
-    #                 await client.send_message(message.channel, stores.asData[searchkey])
-    #             else:
-    #                 closests = difflib.get_close_matches(searchkey, stores.asData.keys())
-    #                 if len(closests) > 0:
-    #                     await client.send_message(message.channel,\
-    #                         "closest match: "+closests[0]+"\n"+stores.asData[closests[0]])
-    #                 else:
-    #                     await client.send_message(message.channel, "Can't find honk")
-    #         else:
-    #             await client.send_message(message.channel,\
-    #                 "Invalid command. How to use: e.g. !chen stalk username")
-        
-    #     elif chenCommand.startswith("remember"):
-    #         matcher = re.match(r"remember ([^ ]+) (.+)", chenCommand)
-    #         if matcher:
-    #             searchkey = matcher.group(1)
-    #             searchdata = matcher.group(2)
-    #             stores.asData[searchkey] = searchdata
-    #             stores.store()
-    #             await client.send_message(message.channel, "{0} successfully remembered".format(searchkey))
-    #         else:
-    #             await client.send_message(message.channel,\
-    #                 "Invalid command. How to use: e.g. !chen remember username <links>")
-
+        elif chen_command.startswith("keep"):
+            if "keep" not in self.data:
+                self.data["keep"] = {}
+            matcher = re.match(r"keep ([^ ]+) ([\w\W]+)", chen_command)
+            if matcher:
+                searchkey = matcher.group(1)
+                searchdata = matcher.group(2)
+                self.data["keep"][searchkey] = searchdata
+                self.save_only()
+                await self.client.send_message(message.channel,\
+                    "{0} successfully remembered".format(searchkey))
+            else:
+                await self.client.send_message(message.channel,\
+                    "Invalid command. How to use: e.g. !chen remember username <links>")
 
 
 # from resistance import Resistance

@@ -1,9 +1,5 @@
-# _*_ coding:utf-8 _*_
-
 import json
 import sys
-import traceback
-
 import discord
 
 from honker import Honker
