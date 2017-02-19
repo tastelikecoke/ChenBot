@@ -6,6 +6,7 @@ import sys
 import re
 import difflib
 import urllib
+from mods import lexicant, eroge
 
 class Honker:
     """ command holder """
@@ -15,6 +16,8 @@ class Honker:
         self.data = {}
         self.prefix = "!chen "
         self.client = None
+        self.lexicant = lexicant.Lexicant(None)
+        self.eroge = eroge.Eroge(None)
 
     def load(self):
         """ loads data """
@@ -31,7 +34,10 @@ class Honker:
             with open("data/data.json", "w") as data_file:
                 data_file.write(json.dumps(all_data))
 
+
     def save_only(self):
+        """ save data """
+
         all_data = {}
         with open("data/data.json", "r") as data_file:
             all_data = json.loads(data_file.read())
@@ -44,6 +50,8 @@ class Honker:
     def bind_client(self, client):
         """ binds client """
         self.client = client
+        self.lexicant.sendMessageFunc = self.client.send_message
+        self.eroge.sendMessageFunc = self.client.send_message
 
     async def ask(self, message):
         """ asks a command """
@@ -67,10 +75,10 @@ class Honker:
                 '**{prefix}prefix \"<prefix>\"** change prefix',
                 '**{prefix}stalk <user>** to learn about users',
                 '**{prefix}keep <user> <data>** to keep data about users',
+                '**{prefix}lex help** for the lexicant game',
                 ' ',
                 '**UNAVAILABLE**',
                 '**{prefix}resistance help** for the resistance game',
-                '**{prefix}lex help** for the lexicant game',
             ]
             output = '\n'.join(commands).replace('{prefix}', self.prefix)
             await self.client.send_message(message.channel, output)
@@ -209,6 +217,29 @@ class Honker:
                 await self.client.send_message(message.channel,\
                     "Invalid command. How to use: e.g. !chen remember username <links>")
 
+        elif chen_command.startswith("eroge"):
+            await self.eroge.begin(message.channel)
+        elif chen_command.startswith("eroge end"):
+            await self.eroge.end()
+
+        # lex parts
+        elif chen_command.startswith("lex help"):
+            await self.client.send_message(message.channel,\
+                "commands are:\n**{0}lex help**\n**{0}lex start <letter>**\n**{0}lex end**\n**{0}lex sirit**".format(
+                    self.prefix))
+        elif chen_command.startswith("lex start"):
+            matcher = re.match(r"lex start (.+)", chen_command)
+            if matcher:
+                await self.lexicant.begin(matcher.group(1), message.channel)
+        elif chen_command.startswith("lex sirit"):
+            await self.lexicant.seerit()
+        elif chen_command.startswith("lex end"):
+            await self.lexicant.end()
+
+        if self.lexicant.state == "game" and message.channel == self.lexicant.channel:
+            await self.lexicant.append(message.content)
+        if self.eroge.state == "game" and message.channel == self.eroge.channel:
+            await self.eroge.next(message.content)
 
 # from resistance import Resistance
 # from lexicant import Lexicant
@@ -258,27 +289,3 @@ class Honker:
     #         await stores.resistance.passMission(message.author)
     #     if chenCommand.startswith("fail"):
     #         await stores.resistance.failMission(message.author)
-
-    # async def askLexicant(self, message):
-    #     chenCommand = ""
-    #     matcher = re.match(stores.prefix + r"(.+)", message.content)
-    #     if matcher:
-    #         chenCommand = matcher.group(1)
-
-    #     if chenCommand.startswith("lex help"):
-    #         await client.send_message(message.channel,\
-    #             "commands are:\n**{0}lex help**\n**{0}lex start**\n**{0}lex**\n**{0}lex sirit**".format(
-    #                 stores.prefix))
-    
-    #     elif chenCommand.startswith("lex start"):
-    #         matcher = re.match(r"lex start (.+)", chenCommand)
-    #         if matcher:
-    #             await stores.lexicant.begin(matcher.group(1), message.channel)
-
-    #     elif chenCommand.startswith("lex"):
-    #         matcher = re.match(r"lex (.+)", chenCommand)
-    #         if matcher:
-    #             await stores.lexicant.append(matcher.group(1))
-
-    #     if chenCommand.startswith("lex sirit"):
-    #         await stores.lexicant.seerit()

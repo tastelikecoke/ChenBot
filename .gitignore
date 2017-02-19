@@ -2,3 +2,4 @@
 /*.json
 /data/*
 /__pycache__/*
+/mods/__pycache__/*

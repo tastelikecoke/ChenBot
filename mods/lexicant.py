@@ -3,15 +3,19 @@ import random
 import re
 
 class Lexicant:
+    """ lexicant commands """
+
     word = ""
     words = ""
     state = "none"
     channel = None
     sendMessageFunc = lambda x, y: None
 
-    def __init__(self, sendMessageFunc, words):
+    def __init__(self, sendMessageFunc):
         self.sendMessageFunc = sendMessageFunc
-        self.words = words
+
+        with open("data/words.txt", "r") as words_file:
+            self.words = words_file.read()
 
     async def sendMessage(self, channel, message):
         await self.sendMessageFunc(channel, message)
@@ -24,22 +28,21 @@ class Lexicant:
         self.state = "game"
         self.word = word
         await self.sendMessage(self.channel, "word: {0}".format(self.word))
+        await self.sendMessage(self.channel, "start saying words")
 
     async def append(self, word):
         if len(word) == 0:
             await self.sendMessage(self.channel, "no game.")
             return
         if len(word) != len(self.word)+1:
-            await self.sendMessage(self.channel, "not valid length.")
             return
         if self.word not in word:
-            await self.sendMessage(self.channel, "word doesnt match.")
             return
         if word not in self.words:
             await self.sendMessage(self.channel, "not part of a word.")
             return
         if len(word) > 3 and "\n"+word+"\n" in self.words:
-            await self.sendMessage(self.channel, "A word! you lose, whoever you are.")
+            await self.sendMessage(self.channel, "A word! you lose!")
             await self.end()
             return
         self.word = word
@@ -49,7 +52,7 @@ class Lexicant:
         await self.sendMessage(self.channel, "closest:{0}".format(closest.group()))
     async def end(self):
         self.word = ""
-        self.state = "game"
+        self.state = "none"
 
 # async def main():
 #     async def f(x, y):
