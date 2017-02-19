@@ -30,8 +30,18 @@ class Honker:
 
         except KeyError:
             all_data[self.server.id] = {"prefix": "!chen "}
-            with open("data.json", "w") as data_file:
+            with open("data/data.json", "w") as data_file:
                 data_file.write(json.dumps(all_data))
+    
+    def save_only(self):
+        all_data = {}
+        with open("data/data.json", "r") as data_file:
+            all_data = json.loads(data_file.read())
+
+        all_data[self.server.id] = self.data
+
+        with open("data/data.json", "w") as data_file:
+            data_file.write(json.dumps(all_data))
 
     def bind_client(self, client):
         """ binds client """
@@ -51,17 +61,20 @@ class Honker:
                 '**{prefix}help** this command',
                 '**{prefix}honk** honk',
                 '**{prefix}meme** meme',
-                '**{prefix}roll** roll dice',
-
+                '**{prefix}pomf** pomf',
+                '**{prefix}roll <number>** roll a number',
+                '**{prefix}pat** pat chen',
+                '**{prefix}critique** critique arts',
+                '**{prefix}prompt** drawing prompts',
+                '**{prefix}prefix \"<prefix>\"** change prefix',
+                ' ',
+                '**UNAVAILABLE**',
                 '**{prefix}resistance help** for the resistance game',
                 '**{prefix}lex help** for the lexicant game',
                 '**{prefix}stalk** to learn about users',
                 '**{prefix}remember** to learn about users',
                 '**{prefix}lang** to switch languages',
-                '**{prefix}pat** pat chen',
                 '**{prefix}sing** let chen sing',
-                '**{prefix}critique** critique arts',
-                '**{prefix}prompt** drawing prompts',
                 '**{prefix}score** store scores',
             ]
             output = '\n'.join(commands).replace('{prefix}', self.prefix)
@@ -77,6 +90,9 @@ class Honker:
 
         elif chen_command.startswith("meme"):
             await self.client.send_message(message.channel, "Don't let your dreams be memes")
+
+        elif chen_command.startswith("pomf"):
+            await self.client.send_message(message.channel, "No pomf for you rat")
 
         elif chen_command.startswith("roll"):
             matcher = re.match(r"roll (\d+)", chen_command)
@@ -108,10 +124,7 @@ class Honker:
             ]))
 
         elif chen_command.startswith("prompt"):
-            if chen_command.startswith("prompt daily"):
-                today_random = random.Random(str(datetime.date()))
-            else:
-                today_random = random
+            today_random = random
             hairness = today_random.choice([
                 "white-haired",
                 "blonde",
@@ -156,22 +169,60 @@ class Honker:
                 "{0} {1} year old {2} {3}".format(hairness, age, typing, action)
             )
 
+        elif chen_command.startswith("prefix"):
+            matcher = re.match(r"prefix \"(.+)\"", chen_command)
+            if matcher:
+                self.prefix = matcher.group(1)
+                self.data["prefix"] = self.prefix
+                self.save_only()
+
+                await self.client.send_message(message.channel,\
+                    "new prefix is {0}".format(self.prefix)
+                )
+
+
+    # async def ask(self, message):
+    #     chenCommand = ""
+    #     matcher = re.match(stores.prefix + r"(.+)", message.content)
+    #     if matcher:
+    #         chenCommand = matcher.group(1)
+
+
+    #     elif chenCommand.startswith("stalk"):
+    #         matcher = re.match(r"stalk (.+)", chenCommand)
+    #         if matcher:
+    #             searchkey = matcher.group(1)
+    #             if searchkey in stores.asData:
+    #                 await client.send_message(message.channel, stores.asData[searchkey])
+    #             else:
+    #                 closests = difflib.get_close_matches(searchkey, stores.asData.keys())
+    #                 if len(closests) > 0:
+    #                     await client.send_message(message.channel,\
+    #                         "closest match: "+closests[0]+"\n"+stores.asData[closests[0]])
+    #                 else:
+    #                     await client.send_message(message.channel, "Can't find honk")
+    #         else:
+    #             await client.send_message(message.channel,\
+    #                 "Invalid command. How to use: e.g. !chen stalk username")
+        
+    #     elif chenCommand.startswith("remember"):
+    #         matcher = re.match(r"remember ([^ ]+) (.+)", chenCommand)
+    #         if matcher:
+    #             searchkey = matcher.group(1)
+    #             searchdata = matcher.group(2)
+    #             stores.asData[searchkey] = searchdata
+    #             stores.store()
+    #             await client.send_message(message.channel, "{0} successfully remembered".format(searchkey))
+    #         else:
+    #             await client.send_message(message.channel,\
+    #                 "Invalid command. How to use: e.g. !chen remember username <links>")
 
 
 
-# from drunk import Drunk
 # from resistance import Resistance
 # from lexicant import Lexicant
 # from charade import Charade
 
-        # elif chen_command.startswith("sing"):
-        #     matcher = re.match(r"sing (\w+) (\w+)", chen_command)
-        #     if matcher:
-        #         await self.client.send_message(message.channel,\
-        #             Drunk().markov(random.randint(10, 20), matcher.group(1), matcher.group(2)))
-        #     else:
-        #         await client.send_message(message.channel,\
-        #             Drunk().markov(random.randint(10, 20)))
     # async def askCharade(self, message):
     #     chenCommand = ""
     #     matcher = re.match(self.prefix + r"(.+)", message.content)
@@ -240,41 +291,3 @@ class Honker:
 
     #     if chenCommand.startswith("lex sirit"):
     #         await stores.lexicant.seerit()
-
-
-    # async def ask(self, message):
-    #     chenCommand = ""
-    #     matcher = re.match(stores.prefix + r"(.+)", message.content)
-    #     if matcher:
-    #         chenCommand = matcher.group(1)
-
-
-    #     elif chenCommand.startswith("stalk"):
-    #         matcher = re.match(r"stalk (.+)", chenCommand)
-    #         if matcher:
-    #             searchkey = matcher.group(1)
-    #             if searchkey in stores.asData:
-    #                 await client.send_message(message.channel, stores.asData[searchkey])
-    #             else:
-    #                 closests = difflib.get_close_matches(searchkey, stores.asData.keys())
-    #                 if len(closests) > 0:
-    #                     await client.send_message(message.channel,\
-    #                         "closest match: "+closests[0]+"\n"+stores.asData[closests[0]])
-    #                 else:
-    #                     await client.send_message(message.channel, "Can't find honk")
-    #         else:
-    #             await client.send_message(message.channel,\
-    #                 "Invalid command. How to use: e.g. !chen stalk username")
-        
-    #     elif chenCommand.startswith("remember"):
-    #         matcher = re.match(r"remember ([^ ]+) (.+)", chenCommand)
-    #         if matcher:
-    #             searchkey = matcher.group(1)
-    #             searchdata = matcher.group(2)
-    #             stores.asData[searchkey] = searchdata
-    #             stores.store()
-    #             await client.send_message(message.channel, "{0} successfully remembered".format(searchkey))
-    #         else:
-    #             await client.send_message(message.channel,\
-    #                 "Invalid command. How to use: e.g. !chen remember username <links>")
-
