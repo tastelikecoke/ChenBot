@@ -1,1 +1,4 @@
 /secrets.json
+/*.json
+/data/*
+/__pycache__/*
