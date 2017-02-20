@@ -5,6 +5,7 @@ import string
 import sys
 import re
 import difflib
+import datetime
 import urllib
 from mods import lexicant, eroge
 
@@ -18,6 +19,8 @@ class Honker:
         self.client = None
         self.lexicant = lexicant.Lexicant(None)
         self.eroge = eroge.Eroge(None)
+        self.please_kill_me = False
+        self.status_report = ""
 
     def load(self):
         """ loads data """
@@ -53,6 +56,26 @@ class Honker:
         self.lexicant.sendMessageFunc = self.client.send_message
         self.eroge.sendMessageFunc = self.client.send_message
 
+    async def run_chronic(self, channel):
+        """ runs every 6 hour """
+
+        self.status_report += "chronic cough began\n"
+
+        while not self.please_kill_me:
+            now = datetime.datetime.now()
+            current_day = now.strftime("%m-%d")
+            if current_day in self.data["birthday"]:
+                celebrant = self.data["birthday"][current_day]
+                await self.client.send_message(channel, "🎊Happy birthday {0}🎆".format(celebrant))
+                self.status_report += "{0}: {1} was greeted\n".format(now, celebrant)
+            else:
+                self.status_report += "{0}: nothing\n".format(now)
+
+            if len(self.status_report) > 9000:
+                self.status_report = self.status_report[5000:]
+
+            await asyncio.sleep(60*60*6)
+
     async def ask(self, message):
         """ asks a command """
 
@@ -82,6 +105,34 @@ class Honker:
             ]
             output = '\n'.join(commands).replace('{prefix}', self.prefix)
             await self.client.send_message(message.channel, output)
+
+        if chen_command.startswith("chronic"):
+            await self.client.send_message(message.channel, "👀")
+            self.please_kill_me = False
+            await self.run_chronic(message.channel)
+
+        if chen_command.startswith("rem"):
+            if "birthday" not in self.data:
+                self.data["birthday"] = {}
+            matcher = re.match(r"rem ([0-9\-]+) ([\w\W]+)", chen_command)
+            if matcher:
+                date = matcher.group(1)
+                celebrant = matcher.group(2)
+                self.data["birthday"][date] = celebrant
+                self.save_only()
+                await self.client.send_message(message.channel,\
+                    "{0} got it".format(date))
+            else:
+                await self.client.send_message(message.channel,\
+                    "Invalid command. How to use: e.g. !chen rem <date> <links>")
+
+        if chen_command.startswith("whisper"):
+            if message.author.name == "tastelikenyan":
+                await self.client.send_message(message.author, self.status_report)
+                self.status_report = ""
+
+        if chen_command.startswith("cough"):
+            self.please_kill_me = True
 
         if chen_command.startswith("honk"):
             rand_duration = random.randint(6, 20)
@@ -215,7 +266,7 @@ class Honker:
                     "{0} successfully remembered".format(searchkey))
             else:
                 await self.client.send_message(message.channel,\
-                    "Invalid command. How to use: e.g. !chen remember username <links>")
+                    "Invalid command. How to use: e.g. !chen keep username <links>")
 
         elif chen_command.startswith("eroge"):
             await self.eroge.begin(message.channel)
