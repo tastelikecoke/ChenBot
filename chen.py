@@ -24,7 +24,9 @@ class Chen:
         async def on_message(message):
             """ what happens on message """
             honker = None
-            if message.server.id not in self.honkers:
+            if not message.server:
+                return
+            elif message.server.id not in self.honkers:
                 honker = Honker(message.server)
                 honker.load()
                 self.honkers[message.server.id] = honker
