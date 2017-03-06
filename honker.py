@@ -78,6 +78,37 @@ class Honker:
 
     async def ask(self, message):
         """ asks a command """
+        if message.author.name.startswith("Nadeko"):
+            if len(message.embeds) >= 1:
+                embed = str(message.embeds)
+
+                # matcher = re.match(r".*has.*", embed)
+                # if matcher:
+                #     await self.client.send_message(message.channel, "mats")
+
+                matcher1 = re.match(r".*Winner.*.*\*\*(\w+\#\d+)\*\*", embed)
+                matcher2 = re.match(r".*\*\*(\w+\#\d+)\*\*.*winner.*", embed)
+                if matcher1:
+                    shemful_user = matcher1.group(1)
+                    if "shem" not in self.data:
+                        self.data["shem"] = {}
+                    if shemful_user not in self.data["shem"]:
+                        self.data["shem"][shemful_user] = 0
+                    self.data["shem"][shemful_user] += 1
+                    self.save_only()
+                    await self.client.send_message(message.channel,\
+                        "{0} now has {1} shem coins".format(shemful_user, self.data["shem"][shemful_user]))
+                if matcher2:
+                    shemful_user = matcher2.group(1)
+                    if "shem" not in self.data:
+                        self.data["shem"] = {}
+                    if shemful_user not in self.data["shem"]:
+                        self.data["shem"][shemful_user] = 0
+                    self.data["shem"][shemful_user] += 1
+                    self.save_only()
+                    await self.client.send_message(message.channel,\
+                        "{0} now has {1} shem coins".format(shemful_user, self.data["shem"][shemful_user]))
+
 
         chen_command = ""
         matcher = re.match(self.prefix + r"(.+)", message.content)
@@ -291,6 +322,7 @@ class Honker:
             await self.lexicant.append(message.content)
         if self.eroge.state == "game" and message.channel == self.eroge.channel:
             await self.eroge.next(message.content)
+
 
 # from resistance import Resistance
 # from lexicant import Lexicant
