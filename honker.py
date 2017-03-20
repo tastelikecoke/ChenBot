@@ -22,6 +22,7 @@ class Honker:
         self.eroge = eroge.Eroge(None)
         self.please_kill_me = False
         self.status_report = ""
+        self.dailies = []
 
     def load(self):
         """ loads data """
@@ -66,13 +67,16 @@ class Honker:
         while not self.please_kill_me:
             now = datetime.datetime.now()
             current_day = now.strftime("%m-%d")
-            if current_day in self.data["birthday"]:
-                celebrant = self.data["birthday"][current_day]
-                if current_greeted_day != current_day:
+            if current_greeted_day != current_day:
+                if current_day in self.data["birthday"]:
+                    celebrant = self.data["birthday"][current_day]
                     await self.client.send_message(channel,
                         "🎊 Happy birthday {0} 🎆".format(celebrant))
                     self.status_report += "{0}: {1} was greeted\n".format(now, celebrant)
                     current_greeted_day = current_day
+                else:
+                    self.status_report += "{0}: dailies began\n".format(now)
+                    self.dailies = []
             else:
                 self.status_report += "{0}: nothing\n".format(now)
 
@@ -196,6 +200,30 @@ class Honker:
                 await self.client.send_message(message.channel,\
                     "You get {0}.".format(
                         random.randint(1, int(matcher.group(1)))))
+        
+        elif chen_command.startswith("daily"):
+            shemful_user = message.author.name + "#" + message.author.discriminator            
+            if "shem" not in self.data:
+                self.data["shem"] = {}
+            if shemful_user not in self.data["shem"]:
+                self.data["shem"][shemful_user] = 0.0
+            if shemful_user not in self.dailies:
+                self.data["shem"][shemful_user] += 0.1
+                special_msg = ""
+                if random.randint(0, 5) == 0:
+                    self.data["shem"][shemful_user] += 0.5
+                    special_msg = "You are lucky! "
+                self.save_only()
+                await self.client.send_message(message.channel,\
+                    "{0}{1} now has {2:.2f} shem coins".format(special_msg, shemful_user, self.data["shem"][shemful_user]))
+                self.dailies.append(shemful_user)
+            else:
+                await self.client.send_message(message.channel,\
+                    "You already claimed! {0} has {1:.2f} shem coins.".format(shemful_user, self.data["shem"][shemful_user]))
+
+        elif chen_command.startswith("gacha"):
+            await self.client.send_message(message.channel,"You won SSR-- jk")
+
 
         elif chen_command.startswith("die"):
             if message.author.name == "tastelikenyan":
