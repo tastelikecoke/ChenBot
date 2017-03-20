@@ -7,6 +7,7 @@ import re
 import difflib
 import datetime
 import urllib
+from PIL import Image, ImageFont, ImageDraw
 from mods import lexicant, eroge
 
 class Honker:
@@ -177,7 +178,13 @@ class Honker:
             await self.client.send_message(message.channel, "Don't let your dreams be memes")
 
         elif chen_command.startswith("pomf"):
-            await self.client.send_message(message.channel, "No pomf for you rat")
+            pomf_image = Image.open("temp/honk.jpg")
+            pomf_draw = ImageDraw.Draw(pomf_image)
+            font = ImageFont.truetype("temp/wild.ttf", 16)
+            pomf_draw.text((254, 165), message.author.name, (0, 0, 0), font=font)
+            pomf_image.save('temp/honk_mod.jpg')
+            with open('temp/honk_mod.jpg', 'rb') as f:
+                await self.client.send_file(message.channel, f)
 
         elif chen_command.startswith("roll"):
             matcher = re.match(r"roll (\d+)", chen_command)
