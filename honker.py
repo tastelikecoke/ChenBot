@@ -62,13 +62,17 @@ class Honker:
 
         self.status_report += "chronic cough began\n"
 
+        current_greeted_day = ""
         while not self.please_kill_me:
             now = datetime.datetime.now()
             current_day = now.strftime("%m-%d")
             if current_day in self.data["birthday"]:
                 celebrant = self.data["birthday"][current_day]
-                await self.client.send_message(channel, "🎊Happy birthday {0}🎆".format(celebrant))
-                self.status_report += "{0}: {1} was greeted\n".format(now, celebrant)
+                if current_greeted_day != current_day:
+                    await self.client.send_message(channel,
+                        "🎊 Happy birthday {0} 🎆".format(celebrant))
+                    self.status_report += "{0}: {1} was greeted\n".format(now, celebrant)
+                    current_greeted_day = current_day
             else:
                 self.status_report += "{0}: nothing\n".format(now)
 
