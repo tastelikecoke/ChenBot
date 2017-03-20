@@ -131,6 +131,8 @@ class Honker:
                 '**{prefix}honk** honk',
                 '**{prefix}meme** meme',
                 '**{prefix}pomf** pomf',
+                '**{prefix}daily** daily coins',
+                '**{prefix}gacha** maybe a UR?',
                 '**{prefix}roll <number>** roll a number',
                 '**{prefix}pat** pat chen',
                 '**{prefix}critique** critique arts',
@@ -138,6 +140,7 @@ class Honker:
                 '**{prefix}prefix \"<prefix>\"** change prefix',
                 '**{prefix}stalk <user>** to learn about users',
                 '**{prefix}keep <user> <data>** to keep data about users',
+                '**{prefix}rem <MM-DD> <greeting>** remember a birthday',
                 '**{prefix}lex help** for the lexicant game',
                 ' ',
                 '**UNAVAILABLE**',
@@ -147,9 +150,10 @@ class Honker:
             await self.client.send_message(message.channel, output)
 
         if chen_command.startswith("chronic"):
-            await self.client.send_message(message.channel, "👀")
-            self.please_kill_me = False
-            await self.run_chronic(message.channel)
+            if message.author.name == "tastelikenyan":
+                await self.client.send_message(message.channel, "👀")
+                self.please_kill_me = False
+                await self.run_chronic(message.channel)
 
         if chen_command.startswith("rem"):
             if "birthday" not in self.data:
