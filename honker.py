@@ -222,7 +222,11 @@ class Honker:
         elif chen_command.startswith("gacha"):
             shemful_user = message.author.name + "#" + message.author.discriminator
             if chen_command.startswith("gacha 500"):
+                coins = self.change_currency("shem", shemful_user, "coin", lambda x: x)
                 getted = random.choice(["kokeshi", "chime"])
+                if coins < 500:
+                    await self.client.send_message(message.channel, "Not enough coins")
+                    getted = ""
                 if getted == "kokeshi":
                     coins = self.change_currency("shem", shemful_user, "coin", lambda x: x-500)
                     kokeshis = self.change_currency("shem", shemful_user, "kokeshi", lambda x: x+1)
@@ -231,7 +235,6 @@ class Honker:
                         "Gacha! You got kokeshi (🎎)! kokeshi does nothing.")
                     await self.client.send_message(message.channel,\
                         "You now have {0} 🎎!\n{1} has {2:.1f} shem coins.".format(kokeshis, shemful_user, coins))
-
                 
                 if getted == "chime":
                     coins = self.change_currency("shem", shemful_user, "coin", lambda x: x-500)
@@ -241,6 +244,9 @@ class Honker:
                         "Gacha! You got chime (🎐)! Each chime increases coin generation by 1%.")
                     await self.client.send_message(message.channel,\
                         "You now have {0} 🎐!\n{1} has {2:.1f} shem coins.".format(chimes, shemful_user, coins))
+            elif chen_command.startswith("gacha 5000"):
+                await self.client.send_message(message.channel,\
+                    "soon")
             else:
                 await self.client.send_message(message.channel,\
                     "type '{0} gacha 500' to roll! uses up 500 coins.".format(self.prefix))
