@@ -200,13 +200,13 @@ class Honker:
         elif chen_command.startswith("daily"):
             shemful_user = message.author.name + "#" + message.author.discriminator
             coins = 0
-            coindelta = 10
+            coindelta = 50
             chimes = self.change_currency("shem", shemful_user, "chime", lambda x: x)
 
             msg = ""
             if shemful_user not in self.dailies:
                 if random.randint(0, 5) == 0:
-                    coindelta = 60
+                    coindelta = 80
                     msg = "Lucky! "
                 coindelta = int(coindelta * (1 + chimes/10.0))
                 coins = self.change_currency("shem", shemful_user, "coin", lambda x: x+coindelta)
@@ -221,10 +221,10 @@ class Honker:
 
         elif chen_command.startswith("gacha"):
             shemful_user = message.author.name + "#" + message.author.discriminator
-            if chen_command.startswith("gacha 100"):
+            if chen_command.startswith("gacha 500"):
                 getted = random.choice(["kokeshi", "chime"])
                 if getted == "kokeshi":
-                    coins = self.change_currency("shem", shemful_user, "coin", lambda x: x-100)
+                    coins = self.change_currency("shem", shemful_user, "coin", lambda x: x-500)
                     kokeshis = self.change_currency("shem", shemful_user, "kokeshi", lambda x: x+1)
                     self.save_only()
                     await self.client.send_message(message.channel,\
@@ -234,7 +234,7 @@ class Honker:
 
                 
                 if getted == "chime":
-                    coins = self.change_currency("shem", shemful_user, "coin", lambda x: x-100)
+                    coins = self.change_currency("shem", shemful_user, "coin", lambda x: x-500)
                     chimes = self.change_currency("shem", shemful_user, "chime", lambda x: x+1)
                     self.save_only()
                     await self.client.send_message(message.channel,\
@@ -243,7 +243,7 @@ class Honker:
                         "You now have {0} 🎐!\n{1} has {2:.1f} shem coins.".format(chimes, shemful_user, coins))
             else:
                 await self.client.send_message(message.channel,\
-                    "type '{0} gacha 100' to roll! uses up 100 coins.".format(self.prefix))
+                    "type '{0} gacha 500' to roll! uses up 500 coins.".format(self.prefix))
                 await self.client.send_message(message.channel,\
                     "type '{0} inventory' to check your inventory.".format(self.prefix))
 
