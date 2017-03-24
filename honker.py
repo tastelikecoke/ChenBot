@@ -20,9 +20,10 @@ class Honker:
         self.client = None
         self.lexicant = lexicant.Lexicant(None)
         self.eroge = eroge.Eroge(None)
-        self.please_kill_me = False
         self.status_report = ""
         self.dailies = []
+        self.current_done_day = ""
+        self.greet_channel = None
 
     def load(self):
         """ loads data """
@@ -38,7 +39,6 @@ class Honker:
             all_data[self.server.id] = {"prefix": "!chen "}
             with open("data/data.json", "w") as data_file:
                 data_file.write(json.dumps(all_data))
-
 
     def save_only(self):
         """ save data """
@@ -58,32 +58,42 @@ class Honker:
         self.lexicant.sendMessageFunc = self.client.send_message
         self.eroge.sendMessageFunc = self.client.send_message
 
-    async def run_chronic(self, channel):
-        """ runs every 6 hour """
-
+    async def clock(self):
+        channel = self.greet_channel
+        if channel is None:
+            return
         self.status_report += "chronic cough began\n"
+        now = datetime.datetime.now()
+        current_day = now.strftime("%m-%d")
+        if self.current_done_day != current_day:
+            # new day has begun
+            self.current_done_day = current_day
 
-        current_greeted_day = ""
-        while not self.please_kill_me:
-            now = datetime.datetime.now()
-            current_day = now.strftime("%m-%d")
-            if current_greeted_day != current_day:
-                if current_day in self.data["birthday"]:
-                    celebrant = self.data["birthday"][current_day]
-                    await self.client.send_message(channel,
-                        "🎊 Happy birthday {0} 🎆".format(celebrant))
-                    self.status_report += "{0}: {1} was greeted\n".format(now, celebrant)
-                    current_greeted_day = current_day
-                else:
-                    self.status_report += "{0}: dailies began\n".format(now)
-                    self.dailies = []
+            if current_day in self.data["birthday"]:
+                celebrant = self.data["birthday"][current_day]
+                await self.client.send_message(channel,
+                    "🎊 Happy birthday {0} 🎆".format(celebrant))
+                self.status_report += "{0}: {1} was greeted\n".format(now, celebrant)
             else:
-                self.status_report += "{0}: nothing\n".format(now)
+                self.dailies = []
+                self.status_report += "{0}: dailies was cleared\n".format(now)
+        else:
+            self.status_report += "{0}: nothing\n".format(now)
 
-            if len(self.status_report) > 9000:
-                self.status_report = self.status_report[5000:]
+        if len(self.status_report) > 9000:
+            print(self.status_report)
+            sys.stdout.flush()
+            self.status_report = self.status_report[5000:]
 
-            await asyncio.sleep(60*60*6)
+    def change_currency(self, shem, shemful_user, currency, function):
+        if shem not in self.data:
+            self.data[shem] = {}
+        if shemful_user not in self.data[shem]:
+            self.data[shem][shemful_user] = {}
+        if currency not in self.data[shem][shemful_user]:
+            self.data[shem][shemful_user][currency] = 0
+        self.data[shem][shemful_user][currency] = function(self.data[shem][shemful_user][currency])
+        return self.data[shem][shemful_user][currency]
 
     async def ask(self, message):
         """ asks a command """
@@ -94,29 +104,19 @@ class Honker:
                 # matcher = re.match(r".*has.*", embed)
                 # if matcher:
                 #     await self.client.send_message(message.channel, "mats")
-
+                shemful_user = ""
                 matcher1 = re.match(r".*Winner.*.*\*\*(\w+\#\d+)\*\*", embed)
                 matcher2 = re.match(r".*\*\*(\w+\#\d+)\*\*.*winner.*", embed)
                 if matcher1:
                     shemful_user = matcher1.group(1)
-                    if "shem" not in self.data:
-                        self.data["shem"] = {}
-                    if shemful_user not in self.data["shem"]:
-                        self.data["shem"][shemful_user] = 0
-                    self.data["shem"][shemful_user] += 1
-                    self.save_only()
-                    await self.client.send_message(message.channel,\
-                        "{0} now has {1} shem coins".format(shemful_user, self.data["shem"][shemful_user]))
                 if matcher2:
                     shemful_user = matcher2.group(1)
-                    if "shem" not in self.data:
-                        self.data["shem"] = {}
-                    if shemful_user not in self.data["shem"]:
-                        self.data["shem"][shemful_user] = 0
-                    self.data["shem"][shemful_user] += 1
+                
+                if shemful_user != "":
+                    coins = self.change_currency("shem", shemful_user, "coin", lambda x: x+100)
                     self.save_only()
                     await self.client.send_message(message.channel,\
-                        "{0} now has {1} shem coins".format(shemful_user, self.data["shem"][shemful_user]))
+                        "{0} now has {1:.1f} shem coins".format(shemful_user, coins))
 
 
         chen_command = ""
@@ -149,12 +149,6 @@ class Honker:
             output = '\n'.join(commands).replace('{prefix}', self.prefix)
             await self.client.send_message(message.channel, output)
 
-        if chen_command.startswith("chronic"):
-            if message.author.name == "tastelikenyan":
-                await self.client.send_message(message.channel, "👀")
-                self.please_kill_me = False
-                await self.run_chronic(message.channel)
-
         if chen_command.startswith("rem"):
             if "birthday" not in self.data:
                 self.data["birthday"] = {}
@@ -172,11 +166,9 @@ class Honker:
 
         if chen_command.startswith("whisper"):
             if message.author.name == "tastelikenyan":
-                await self.client.send_message(message.author, self.status_report)
+                await self.client.send_message(message.author, "status:\n" + self.status_report)
                 self.status_report = ""
-
-        if chen_command.startswith("cough"):
-            self.please_kill_me = True
+            self.greet_channel = message.channel
 
         if chen_command.startswith("honk"):
             rand_duration = random.randint(6, 20)
@@ -206,28 +198,71 @@ class Honker:
                         random.randint(1, int(matcher.group(1)))))
         
         elif chen_command.startswith("daily"):
-            shemful_user = message.author.name + "#" + message.author.discriminator            
-            if "shem" not in self.data:
-                self.data["shem"] = {}
-            if shemful_user not in self.data["shem"]:
-                self.data["shem"][shemful_user] = 0.0
+            shemful_user = message.author.name + "#" + message.author.discriminator
+            coins = 0
+            coindelta = 10
+            chimes = self.change_currency("shem", shemful_user, "chime", lambda x: x)
+
+            msg = ""
             if shemful_user not in self.dailies:
-                self.data["shem"][shemful_user] += 0.1
-                special_msg = ""
                 if random.randint(0, 5) == 0:
-                    self.data["shem"][shemful_user] += 0.5
-                    special_msg = "You are lucky! "
+                    coindelta = 60
+                    msg = "Lucky! "
+                coindelta = int(coindelta * (1 + chimes/10.0))
+                coins = self.change_currency("shem", shemful_user, "coin", lambda x: x+coindelta)
                 self.save_only()
                 await self.client.send_message(message.channel,\
-                    "{0}{1} now has {2:.2f} shem coins".format(special_msg, shemful_user, self.data["shem"][shemful_user]))
+                    "{0}{1} now has {2:.1f} shem coins".format(msg, shemful_user, coins))
                 self.dailies.append(shemful_user)
             else:
+                coins = self.change_currency("shem", shemful_user, "coin", lambda x: x)
                 await self.client.send_message(message.channel,\
-                    "You already claimed! {0} has {1:.2f} shem coins.".format(shemful_user, self.data["shem"][shemful_user]))
+                    "You already claimed! {0} has {1:.1f} shem coins.".format(shemful_user, coins))
 
         elif chen_command.startswith("gacha"):
-            await self.client.send_message(message.channel,"You won SSR-- jk")
+            shemful_user = message.author.name + "#" + message.author.discriminator
+            if chen_command.startswith("gacha 100"):
+                getted = random.choice(["kokeshi", "chime"])
+                if getted == "kokeshi":
+                    coins = self.change_currency("shem", shemful_user, "coin", lambda x: x-100)
+                    kokeshis = self.change_currency("shem", shemful_user, "kokeshi", lambda x: x+1)
+                    self.save_only()
+                    await self.client.send_message(message.channel,\
+                        "Gacha! You got kokeshi (🎎)! kokeshi does nothing.")
+                    await self.client.send_message(message.channel,\
+                        "You now have {0} 🎎!\n{1} has {2:.1f} shem coins.".format(kokeshis, shemful_user, coins))
 
+                
+                if getted == "chime":
+                    coins = self.change_currency("shem", shemful_user, "coin", lambda x: x-100)
+                    chimes = self.change_currency("shem", shemful_user, "chime", lambda x: x+1)
+                    self.save_only()
+                    await self.client.send_message(message.channel,\
+                        "Gacha! You got chime (🎐)! Each chime increases coin generation by 1%.")
+                    await self.client.send_message(message.channel,\
+                        "You now have {0} 🎐!\n{1} has {2:.1f} shem coins.".format(chimes, shemful_user, coins))
+            else:
+                await self.client.send_message(message.channel,\
+                    "type '{0} gacha 100' to roll! uses up 100 coins.".format(self.prefix))
+                await self.client.send_message(message.channel,\
+                    "type '{0} inventory' to check your inventory.".format(self.prefix))
+
+        elif chen_command.startswith("inventory"):
+            shemful_user = message.author.name + "#" + message.author.discriminator
+            string_out = ""
+            coins = self.change_currency("shem", shemful_user, "coin", lambda x: x)
+            if coins != 0:
+                string_out += "{0} coins\n".format(coins)
+            
+            kokeshis = self.change_currency("shem", shemful_user, "kokeshi", lambda x: x)
+            if kokeshis != 0:
+                string_out += "{0} 🎎\n".format(kokeshis)
+            
+            chimes = self.change_currency("shem", shemful_user, "chime", lambda x: x)
+            if chimes != 0:
+                string_out += "{0} 🎐\n".format(chimes)
+            
+            await self.client.send_message(message.channel, string_out)
 
         elif chen_command.startswith("die"):
             if message.author.name == "tastelikenyan":
