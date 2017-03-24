@@ -3,6 +3,7 @@ import random
 import json
 import string
 import sys
+import pytz
 import re
 import difflib
 import datetime
@@ -241,17 +242,18 @@ class Honker:
                     chimes = self.change_currency("shem", shemful_user, "chime", lambda x: x+1)
                     self.save_only()
                     await self.client.send_message(message.channel,\
-                        "Gacha! You got chime (🎐)! Each chime increases coin generation by 1%.")
+                        "Gacha! You got chime (🎐)! Each chime increases coin generation by 10%.")
                     await self.client.send_message(message.channel,\
                         "You now have {0} 🎐!\n{1} has {2:.1f} shem coins.".format(chimes, shemful_user, coins))
-            elif chen_command.startswith("gacha 5000"):
-                await self.client.send_message(message.channel,\
-                    "soon")
+            elif chen_command.startswith("gacha 3000"):
+                    await self.client.send_message(message.channel,\
+                        "Soon. (no coin deductions)")
             else:
                 await self.client.send_message(message.channel,\
-                    "type '{0} gacha 500' to roll! uses up 500 coins.".format(self.prefix))
+                    "type '{0}gacha 500' or '{0}gacha 3000' to roll! uses up 500 coins.".format(self.prefix))
                 await self.client.send_message(message.channel,\
                     "type '{0} inventory' to check your inventory.".format(self.prefix))
+        
 
         elif chen_command.startswith("inventory"):
             shemful_user = message.author.name + "#" + message.author.discriminator
@@ -269,6 +271,53 @@ class Honker:
                 string_out += "{0} 🎐\n".format(chimes)
             
             await self.client.send_message(message.channel, string_out)
+
+
+        elif chen_command.startswith("tz"):
+            shemful_user = message.author.name + "#" + message.author.discriminator
+            matcher = re.match(r"tz ([a-zA-Z\/]+)( )?.*", chen_command)
+            
+            if len(message.mentions) == 1:
+                shemful_user = message.mentions[0].name + "#" + message.mentions[0].discriminator
+            if matcher:
+                timezone = matcher.group(1)
+                try:
+                    self.change_currency("misc", shemful_user, "tz", lambda x: timezone)
+                    now = datetime.datetime.now(pytz.timezone(timezone))
+                    await self.client.send_message(message.channel, "nice timezone! got it")
+                except pytz.exceptions.UnknownTimeZoneError:
+                    await self.client.send_message(message.channel, "notvalid timezone.")
+            self.save_only()
+
+        elif chen_command.startswith("ohio"):
+            shemful_user = message.author.name + "#" + message.author.discriminator
+            if len(message.mentions) == 1:
+                shemful_user = message.mentions[0].name + "#" + message.mentions[0].discriminator
+
+            try:
+                timezone = self.change_currency("misc", shemful_user, "tz", lambda x: x)
+                if timezone == 0:
+                    timezone = ""
+                now = datetime.datetime.now(pytz.timezone(timezone))
+                new_minute = now.minute
+                if new_minute < 10:
+                    new_minute = "0"+str(new_minute)
+                else:
+                    new_minute = str(new_minute)
+                if 0 <= now.hour and now.hour <= 5:
+                    await self.client.send_message(message.channel, "pls sleep it's {0}:{1}".format(now.hour, new_minute))
+                elif 5 <= now.hour and now.hour <= 11:
+                    await self.client.send_message(message.channel, "ohayou it's {0}:{1}".format(now.hour, new_minute))
+                elif 22 <= now.hour and now.hour <= 24:
+                    await self.client.send_message(message.channel, "no, it's konbanwa {0}:{1}".format(now.hour, new_minute))
+                elif 12 <= now.hour and now.hour <= 12:
+                    await self.client.send_message(message.channel, "It's high nuuuun {0}:{1}".format(now.hour, new_minute))
+                else:
+                    await self.client.send_message(message.channel, "It's {0}:{1}".format(now.hour, new_minute))
+
+            except pytz.exceptions.UnknownTimeZoneError:
+                await self.client.send_message(message.channel, "Pls register your timezone. e.g. {0}tz US/Pacific".format(self.prefix))
+
 
         elif chen_command.startswith("die"):
             if message.author.name == "tastelikenyan":
