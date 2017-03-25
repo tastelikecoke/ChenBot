@@ -27,6 +27,7 @@ class Honker:
         self.current_done_day = ""
         self.greet_channel = None
         self.police_channel = None
+        self.restricted_channel = None
 
     def load(self):
         """ loads data """
@@ -101,23 +102,30 @@ class Honker:
         if message.author.name.startswith("Nadeko"):
             if len(message.embeds) >= 1:
                 embed = str(message.embeds)
-
                 # matcher = re.match(r".*has.*", embed)
                 # if matcher:
                 #     await self.client.send_message(message.channel, "mats")
                 shemful_user = ""
+                coindelta = 0
                 matcher1 = re.match(r".*Winner.*.*\*\*(\w+\#\d+)\*\*", embed)
                 matcher2 = re.match(r".*\*\*(\w+\#\d+)\*\*.*winner.*", embed)
+                matcher3 = re.match(r".*\'(\w+\#\d+) guessed a letter.*", embed)
                 if matcher1:
                     shemful_user = matcher1.group(1)
+                    coindelta = 300
                 if matcher2:
                     shemful_user = matcher2.group(1)
+                    coindelta = 300
+                if matcher3:
+                    shemful_user = matcher3.group(1)
+                    coindelta = 50
                 
                 if shemful_user != "":
-                    coins = self.change_currency("shem", shemful_user, "coin", lambda x: x+100)
+                    coins = self.change_currency("shem", shemful_user, "coin", lambda x: x+coindelta)
                     self.save_only()
                     await self.client.send_message(message.channel,\
-                        "{0} now has {1:.1f} shem coins".format(shemful_user, coins))
+                        "that gets you {0} coins! {1} now has {2:.1f} shem coins".format(coindelta, shemful_user, coins))
+                
 
 
         chen_command = ""
@@ -125,33 +133,56 @@ class Honker:
         if matcher:
             chen_command = matcher.group(1)
 
-        if chen_command.startswith("help"):
+        if self.restricted_channel is not None and message.channel == self.restricted_channel:
+            return
+        
+        if chen_command.startswith("restrict"):
+            if self.restricted_channel is None:
+                self.restricted_channel = message.channel
+                await self.client.send_message(message.channel, "😶")
+            else:
+                self.restricted_channel = None
+                await self.client.send_message(message.channel, "😄 restriction gone!")
+
+        elif chen_command.startswith("help"):
             commands = [
                 "Commands are:",
+                ' ',
+                '**GENERAL**',
                 '**{prefix}help** this command',
-                '**{prefix}honk** honk',
-                '**{prefix}meme** meme',
-                '**{prefix}pomf** pomf',
-                '**{prefix}daily** daily coins',
-                '**{prefix}gacha** get items',
-                '**{prefix}bestgirl** who is bestgirl?',
+                '**{prefix}honk** HONK',
+                '**{prefix}meme** inspire people through memes',
+                '**{prefix}pomf** do a pomf',
                 '**{prefix}roll <number>** roll a number',
                 '**{prefix}pat** pat chen',
-                '**{prefix}critique** critique arts',
-                '**{prefix}prompt** drawing prompts',
                 '**{prefix}prefix \"<prefix>\"** change prefix',
+                '**{prefix}police** monitor a channel for image posting',
+                '**{prefix}restrict** disable certain chen commands in a channel',
+                ' ',
+                '*STALKING*',
                 '**{prefix}stalk <user>** to learn about users',
                 '**{prefix}keep <user> <data>** to keep data about users',
                 '**{prefix}rem <MM-DD> <greeting>** remember a birthday',
+                '**{prefix}tz <Tz/Formatted_Timezone>** store your timezone',
+                '**{prefix}time** check your time',
+                '**{prefix}time User#1234** check a user\'s time',
+                ' ',
+                '**GAMES**',
+                '**{prefix}daily** get daily coins',
+                '**{prefix}gacha** get items',
+                '**{prefix}bestgirl** who is bestgirl?',
+                '**{prefix}critique** critique arts',
+                '**{prefix}prompt** drawing prompts',
                 '**{prefix}lex help** for the lexicant game',
                 ' ',
                 '**UNAVAILABLE**',
                 '**{prefix}resistance help** for the resistance game',
             ]
             output = '\n'.join(commands).replace('{prefix}', self.prefix)
-            await self.client.send_message(message.channel, output)
-
-        if chen_command.startswith("rem"):
+            await self.client.send_message(message.channel, "Sent the commands help in the pms!")
+            await self.client.send_message(message.author, output)
+        
+        elif chen_command.startswith("rem"):
             if "birthday" not in self.data:
                 self.data["birthday"] = {}
             matcher = re.match(r"rem ([0-9\-]+) ([\w\W]+)", chen_command)
@@ -166,13 +197,15 @@ class Honker:
                 await self.client.send_message(message.channel,\
                     "Invalid command. How to use: e.g. !chen rem <date> <links>")
 
-        if chen_command.startswith("whisper"):
+        elif chen_command.startswith("whisper"):
             if message.author.name == "tastelikenyan":
                 await self.client.send_message(message.author, "status:\n" + self.status_report)
                 self.status_report = ""
+            else:
+                await self.client.send_message(message.author, "ʷʰᶦˢᵖᵉʳ")
             self.greet_channel = message.channel
 
-        if chen_command.startswith("honk"):
+        elif chen_command.startswith("honk"):
             rand_duration = random.randint(6, 20)
             await self.client.send_message(message.channel, "honk")
             await asyncio.sleep(rand_duration//2)
@@ -234,7 +267,7 @@ class Honker:
                     kokeshis = self.change_currency("shem", shemful_user, "kokeshi", lambda x: x+1)
                     self.save_only()
                     await self.client.send_message(message.channel,\
-                        "Gacha! You got kokeshi (🎎)! kokeshi can traded for best girl votes.")
+                        "Gacha! You got kokeshi (🎎)! kokeshi does nothing.")
                     await self.client.send_message(message.channel,\
                         "You now have {0} 🎎!\n{1} has {2:.1f} shem coins.".format(kokeshis, shemful_user, coins))
                 
@@ -280,11 +313,11 @@ class Honker:
             matcher = re.match(r"bestgirl ([a-zA-Z 0-9]+)", chen_command)
             if matcher:
                 girl = matcher.group(1)
-                kokeshi = self.change_currency("shem", shemful_user, "kokeshi", lambda x: x)
-                if kokeshi < 1:
-                    await self.client.send_message(message.channel, "Not enough kokeshis")
+                coins = self.change_currency("shem", shemful_user, "coin", lambda x: x)
+                if coins < 500:
+                    await self.client.send_message(message.channel, "Not enough coins")
                 else:
-                    kokeshis = self.change_currency("shem", shemful_user, "kokeshi", lambda x: x-1)
+                    coins = self.change_currency("shem", shemful_user, "coin", lambda x: x-500)
                     bestkey = "bestgirl"
                     if bestkey not in self.data:
                         self.data[bestkey] = {}
@@ -311,7 +344,7 @@ class Honker:
                             listing += "{0}) {1}\n".format(i+1, sorted_girls[i][0])
 
                 await self.client.send_message(message.channel,\
-                    "{0}\ntype '{1}bestgirl <xxx>' to also vote. costs 1 🎎".format(listing, self.prefix))
+                    "{0}\ntype '{1}bestgirl <xxx>' to also vote. costs 500 coins".format(listing, self.prefix))
 
 
         elif chen_command.startswith("tz"):
@@ -330,9 +363,9 @@ class Honker:
                     await self.client.send_message(message.channel, "notvalid timezone.")
             self.save_only()
 
-        elif chen_command.startswith("ohio"):
+        elif chen_command.startswith("time"):
             shemful_user = message.author.name + "#" + message.author.discriminator
-            matcher = re.match(r"ohio (.+\#.+)", chen_command)
+            matcher = re.match(r"time (.+\#.+)", chen_command)
 
             if matcher:
                 shemful_user = matcher.group(1)
