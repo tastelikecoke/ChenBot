@@ -7,6 +7,7 @@ import pytz
 import re
 import difflib
 import datetime
+import operator
 import urllib
 from PIL import Image, ImageFont, ImageDraw
 from mods import lexicant, eroge
@@ -82,8 +83,6 @@ class Honker:
             self.status_report += "{0}: nothing\n".format(now)
 
         if len(self.status_report) > 9000:
-            print(self.status_report)
-            sys.stdout.flush()
             self.status_report = self.status_report[5000:]
 
     def change_currency(self, shem, shemful_user, currency, function):
@@ -133,7 +132,8 @@ class Honker:
                 '**{prefix}meme** meme',
                 '**{prefix}pomf** pomf',
                 '**{prefix}daily** daily coins',
-                '**{prefix}gacha** maybe a UR?',
+                '**{prefix}gacha** get items',
+                '**{prefix}bestgirl** who is bestgirl?',
                 '**{prefix}roll <number>** roll a number',
                 '**{prefix}pat** pat chen',
                 '**{prefix}critique** critique arts',
@@ -207,13 +207,13 @@ class Honker:
             msg = ""
             if shemful_user not in self.dailies:
                 if random.randint(0, 5) == 0:
-                    coindelta = 80
+                    coindelta = 300
                     msg = "Lucky! "
-                coindelta = int(coindelta * (1 + chimes/10.0))
+                coindelta = int(coindelta * (1 + chimes/5.0))
                 coins = self.change_currency("shem", shemful_user, "coin", lambda x: x+coindelta)
                 self.save_only()
                 await self.client.send_message(message.channel,\
-                    "{0}{1} now has {2:.1f} shem coins".format(msg, shemful_user, coins))
+                    "You gained {0} coins!\n{1}{2} now has {3:.1f} shem coins".format(coindelta, msg, shemful_user, coins))
                 self.dailies.append(shemful_user)
             else:
                 coins = self.change_currency("shem", shemful_user, "coin", lambda x: x)
@@ -222,7 +222,7 @@ class Honker:
 
         elif chen_command.startswith("gacha"):
             shemful_user = message.author.name + "#" + message.author.discriminator
-            if chen_command.startswith("gacha 500"):
+            if chen_command == "gacha 500":
                 coins = self.change_currency("shem", shemful_user, "coin", lambda x: x)
                 getted = random.choice(["kokeshi", "chime"])
                 if coins < 500:
@@ -233,7 +233,7 @@ class Honker:
                     kokeshis = self.change_currency("shem", shemful_user, "kokeshi", lambda x: x+1)
                     self.save_only()
                     await self.client.send_message(message.channel,\
-                        "Gacha! You got kokeshi (🎎)! kokeshi does nothing.")
+                        "Gacha! You got kokeshi (🎎)! kokeshi can traded for best girl votes.")
                     await self.client.send_message(message.channel,\
                         "You now have {0} 🎎!\n{1} has {2:.1f} shem coins.".format(kokeshis, shemful_user, coins))
                 
@@ -242,10 +242,10 @@ class Honker:
                     chimes = self.change_currency("shem", shemful_user, "chime", lambda x: x+1)
                     self.save_only()
                     await self.client.send_message(message.channel,\
-                        "Gacha! You got chime (🎐)! Each chime increases coin generation by 10%.")
+                        "Gacha! You got chime (🎐)! Each chime increases coin generation by 20%.")
                     await self.client.send_message(message.channel,\
                         "You now have {0} 🎐!\n{1} has {2:.1f} shem coins.".format(chimes, shemful_user, coins))
-            elif chen_command.startswith("gacha 3000"):
+            elif chen_command == "gacha 3000":
                     await self.client.send_message(message.channel,\
                         "Soon. (no coin deductions)")
             else:
@@ -273,9 +273,49 @@ class Honker:
             await self.client.send_message(message.channel, string_out)
 
 
+        elif chen_command.startswith("bestgirl"):
+            shemful_user = message.author.name + "#" + message.author.discriminator
+            
+            matcher = re.match(r"bestgirl ([a-zA-Z 0-9]+)", chen_command)
+            if matcher:
+                girl = matcher.group(1)
+                kokeshi = self.change_currency("shem", shemful_user, "kokeshi", lambda x: x)
+                if kokeshi < 1:
+                    await self.client.send_message(message.channel, "Not enough kokeshis")
+                else:
+                    kokeshis = self.change_currency("shem", shemful_user, "kokeshi", lambda x: x-1)
+                    bestkey = "bestgirl"
+                    if bestkey not in self.data:
+                        self.data[bestkey] = {}
+                    if girl not in self.data[bestkey]:
+                        self.data[bestkey][girl] = 0
+                    self.data[bestkey][girl] += 1
+                    self.save_only()
+                await self.client.send_message(message.channel,\
+                    "{0} now has {1} bestgirl votes.".format(girl, self.data[bestkey][girl]))
+            else:
+                bestkey = "bestgirl"
+                listing = ""
+                if bestkey not in self.data:
+                    self.data[bestkey] = {}
+                    listing = "No best girl yet.\n"
+                else:
+                    sorted_girls = sorted(self.data[bestkey].items(), key=operator.itemgetter(1))
+                    sorted_girls.reverse()
+                    listing = "Best Girl Ranking:\n"
+                    for i in range(5):
+                        if len(sorted_girls) <= i:
+                            break
+                        else:
+                            listing += "{0}) {1}\n".format(i+1, sorted_girls[i][0])
+
+                await self.client.send_message(message.channel,\
+                    "{0}\ntype '{1}bestgirl <xxx>' to also vote. costs 1 🎎".format(listing, self.prefix))
+
+
         elif chen_command.startswith("tz"):
             shemful_user = message.author.name + "#" + message.author.discriminator
-            matcher = re.match(r"tz ([a-zA-Z\/]+)( )?.*", chen_command)
+            matcher = re.match(r"tz ([a-zA-Z_\/]+)( )?.*", chen_command)
             
             if len(message.mentions) == 1:
                 shemful_user = message.mentions[0].name + "#" + message.mentions[0].discriminator

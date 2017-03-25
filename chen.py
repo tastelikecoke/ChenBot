@@ -70,7 +70,7 @@ class Chen:
         while True:
             for honker in self.honkers:
                 await self.honkers[honker].clock()
-            await asyncio.sleep(60)
+            await asyncio.sleep(60*15)
 
     def load(self):
         """ load datas """
