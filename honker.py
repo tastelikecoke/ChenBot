@@ -26,6 +26,7 @@ class Honker:
         self.dailies = []
         self.current_done_day = ""
         self.greet_channel = None
+        self.police_channel = None
 
     def load(self):
         """ loads data """
@@ -331,9 +332,12 @@ class Honker:
 
         elif chen_command.startswith("ohio"):
             shemful_user = message.author.name + "#" + message.author.discriminator
+            matcher = re.match(r"ohio (.+\#.+)", chen_command)
+
+            if matcher:
+                shemful_user = matcher.group(1)
             if len(message.mentions) == 1:
                 shemful_user = message.mentions[0].name + "#" + message.mentions[0].discriminator
-
             try:
                 timezone = self.change_currency("misc", shemful_user, "tz", lambda x: x)
                 if timezone == 0:
@@ -344,20 +348,29 @@ class Honker:
                     new_minute = "0"+str(new_minute)
                 else:
                     new_minute = str(new_minute)
-                if 0 <= now.hour and now.hour <= 5:
-                    await self.client.send_message(message.channel, "pls sleep it's {0}:{1}".format(now.hour, new_minute))
-                elif 5 <= now.hour and now.hour <= 11:
-                    await self.client.send_message(message.channel, "ohayou it's {0}:{1}".format(now.hour, new_minute))
-                elif 22 <= now.hour and now.hour <= 24:
-                    await self.client.send_message(message.channel, "no, it's konbanwa {0}:{1}".format(now.hour, new_minute))
+                if 0 <= now.hour and now.hour <= 4:
+                    await self.client.send_message(message.channel, "Pls sleep {0}! it's 0{1}:{2}".format(shemful_user, now.hour, new_minute))
+                elif 4 <= now.hour and now.hour <= 9:
+                    await self.client.send_message(message.channel, "Ohayou {0}-san! it's 0{1}:{2}".format(shemful_user, now.hour, new_minute))
+                elif 10 <= now.hour and now.hour <= 11:
+                    await self.client.send_message(message.channel, "Hey {0}, Nice morning! it's {1}:{2}".format(shemful_user, now.hour, new_minute))
                 elif 12 <= now.hour and now.hour <= 12:
-                    await self.client.send_message(message.channel, "It's high nuuuun {0}:{1}".format(now.hour, new_minute))
+                    await self.client.send_message(message.channel, "{0}. It's high noon. {1}:{2}".format(shemful_user, now.hour, new_minute))
+                elif 19 <= now.hour and now.hour <= 24:
+                    await self.client.send_message(message.channel, "Konbanwa {0}-san! it's {1}:{2}".format(shemful_user, now.hour, new_minute))
                 else:
-                    await self.client.send_message(message.channel, "It's {0}:{1}".format(now.hour, new_minute))
+                    await self.client.send_message(message.channel, "Good day {0}, it's {1}:{2}".format(shemful_user, now.hour, new_minute))
 
             except pytz.exceptions.UnknownTimeZoneError:
                 await self.client.send_message(message.channel, "Pls register your timezone. e.g. {0}tz US/Pacific".format(self.prefix))
 
+        elif chen_command.startswith("police"):
+            if self.police_channel is None:
+                self.police_channel = message.channel
+                await self.client.send_message(message.channel, "serve and protect 🚓")
+            else:
+                self.police_channel = None
+                await self.client.send_message(message.channel, "removing police 🚓")
 
         elif chen_command.startswith("die"):
             if message.author.name == "tastelikenyan":
@@ -495,6 +508,14 @@ class Honker:
             await self.lexicant.append(message.content)
         if self.eroge.state == "game" and message.channel == self.eroge.channel:
             await self.eroge.next(message.content)
+        
+        if self.police_channel is not None and message.channel == self.police_channel:
+            if len(message.attachments) > 0:
+                await self.client.send_message(message.channel, "do not post images here 🚓")
+                self.police_channel = None
+                await asyncio.sleep(120)
+                self.police_channel = message.channel
+                # refactory period
 
 
 # from resistance import Resistance
