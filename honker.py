@@ -325,8 +325,8 @@ class Honker:
                         self.data[bestkey][girl] = 0
                     self.data[bestkey][girl] += 1
                     self.save_only()
-                await self.client.send_message(message.channel,\
-                    "{0} now has {1} bestgirl votes.".format(girl, self.data[bestkey][girl]))
+                    await self.client.send_message(message.channel,\
+                        "{0} now has {1} bestgirl votes.".format(girl, self.data[bestkey][girl]))
             else:
                 bestkey = "bestgirl"
                 listing = ""
