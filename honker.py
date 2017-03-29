@@ -118,7 +118,7 @@ class Honker:
                     coindelta = 300
                 if matcher3:
                     shemful_user = matcher3.group(1)
-                    coindelta = 50
+                    coindelta = 20
                 
                 if shemful_user != "":
                     coins = self.change_currency("shem", shemful_user, "coin", lambda x: x+coindelta)
@@ -276,12 +276,69 @@ class Honker:
                     chimes = self.change_currency("shem", shemful_user, "chime", lambda x: x+1)
                     self.save_only()
                     await self.client.send_message(message.channel,\
-                        "Gacha! You got chime (🎐)! Each chime increases coin generation by 20%.")
+                        "Gacha! You got chime (🎐)! Each chime increases coin generation by 10%.")
                     await self.client.send_message(message.channel,\
                         "You now have {0} 🎐!\n{1} has {2:.1f} shem coins.".format(chimes, shemful_user, coins))
             elif chen_command == "gacha 3000":
+                coins = self.change_currency("shem", shemful_user, "coin", lambda x: x)
+                getted = random.choice(["kokeshi", "kokeshi", "kokeshi", "chime", "chime", "chime", "cat", "dog", "rat", "malaysian"])
+                if coins < 3000:
+                    await self.client.send_message(message.channel, "Not enough coins")
+                    getted = ""
+                if getted == "kokeshi":
+                    coins = self.change_currency("shem", shemful_user, "coin", lambda x: x-3000)
+                    kokeshis = self.change_currency("shem", shemful_user, "kokeshi", lambda x: x+1)
+                    self.save_only()
                     await self.client.send_message(message.channel,\
-                        "Soon. (no coin deductions)")
+                        "Gacha! You got kokeshi (🎎)! a kokeshi does nothing ahahaha for 3000 nothing ahahaha")
+                    await self.client.send_message(message.channel,\
+                        "You now have {0} 🎎!\n{1} has {2:.1f} shem coins.".format(kokeshis, shemful_user, coins))
+                
+                if getted == "chime":
+                    coins = self.change_currency("shem", shemful_user, "coin", lambda x: x-3000)
+                    chimes = self.change_currency("shem", shemful_user, "chime", lambda x: x+1)
+                    self.save_only()
+                    await self.client.send_message(message.channel,\
+                        "Gacha! You got chime (🎐)! Each chime increases coin generation by 10%.")
+                    await self.client.send_message(message.channel,\
+                        "You now have {0} 🎐!\n{1} has {2:.1f} shem coins.".format(chimes, shemful_user, coins))
+                
+                if getted == "cat":
+                    coins = self.change_currency("shem", shemful_user, "coin", lambda x: x-3000)
+                    goods = self.change_currency("shem", shemful_user, getted, lambda x: x+1)
+                    self.save_only()
+                    await self.client.send_message(message.channel,\
+                        "Gacha! You got {0} (😼)! Nice cat.".format(getted))
+                    await self.client.send_message(message.channel,\
+                        "You now have {0} 😼!\n{1} has {2:.1f} shem coins.".format(goods, shemful_user, coins))    
+                
+                if getted == "dog":
+                    coins = self.change_currency("shem", shemful_user, "coin", lambda x: x-3000)
+                    goods = self.change_currency("shem", shemful_user, getted, lambda x: x+1)
+                    self.save_only()
+                    await self.client.send_message(message.channel,\
+                        "Gacha! You got {0} (🐶)! Nice dog.".format(getted))
+                    await self.client.send_message(message.channel,\
+                        "You now have {0} 🐶!\n{1} has {2:.1f} shem coins.".format(goods, shemful_user, coins))
+                
+                if getted == "rat":
+                    coins = self.change_currency("shem", shemful_user, "coin", lambda x: x-3000)
+                    goods = self.change_currency("shem", shemful_user, getted, lambda x: x+1)
+                    self.save_only()
+                    await self.client.send_message(message.channel,\
+                        "Gacha! You got {0} (🐀)! Nice rat.".format(getted))
+                    await self.client.send_message(message.channel,\
+                        "You now have {0} 🐀!\n{1} has {2:.1f} shem coins.".format(goods, shemful_user, coins))
+
+                if getted == "malaysian":
+                    coins = self.change_currency("shem", shemful_user, "coin", lambda x: x-3000)
+                    goods = self.change_currency("shem", shemful_user, getted, lambda x: x+1)
+                    self.save_only()
+                    await self.client.send_message(message.channel,\
+                        "Gacha! You got {0} (🇲🇾)! Good at shitposting. Very friendly.".format(getted))
+                    await self.client.send_message(message.channel,\
+                        "You now have {0} 🇲🇾!\n{1} has {2:.1f} shem coins.".format(goods, shemful_user, coins))    
+
             else:
                 await self.client.send_message(message.channel,\
                     "type '{0}gacha 500' or '{0}gacha 3000' to roll! uses up 500 coins.".format(self.prefix))
@@ -303,6 +360,22 @@ class Honker:
             chimes = self.change_currency("shem", shemful_user, "chime", lambda x: x)
             if chimes != 0:
                 string_out += "{0} 🎐\n".format(chimes)
+            
+            cat = self.change_currency("shem", shemful_user, "cat", lambda x: x)
+            if cat != 0:
+                string_out += "{0} 😼\n".format(cat)
+            
+            dog = self.change_currency("shem", shemful_user, "dog", lambda x: x)
+            if dog != 0:
+                string_out += "{0} 🐶\n".format(dog)
+
+            rat = self.change_currency("shem", shemful_user, "rat", lambda x: x)
+            if rat != 0:
+                string_out += "{0} 🐀\n".format(rat)
+    
+            malaysian = self.change_currency("shem", shemful_user, "malaysian", lambda x: x)
+            if malaysian != 0:
+                string_out += "{0} 🇲🇾\n".format(malaysian)
             
             await self.client.send_message(message.channel, string_out)
 
