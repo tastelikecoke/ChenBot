@@ -70,7 +70,7 @@ class Hangman:
         "Ayanami Rei",
         "Ikari Shinji",
         "Akemi Homura",
-        "Kaname, Madoka",
+        "Kaname Madoka",
         "Sakura Kyouko",
         "Miki Sayaka",
         "Tomoe Mami",

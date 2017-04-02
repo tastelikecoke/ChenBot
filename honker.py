@@ -92,9 +92,9 @@ class Honker:
 
     async def addCoinsFunc(self, channel, shemful_user):
         if shemful_user != "":
-            coindelta = 500
+            coindelta = 300
             chimes = self.change_currency("shem", shemful_user, "chime", lambda x: x)
-            coindelta = int(coindelta * (1 + chimes/5.0))
+            coindelta = int(coindelta * (1 + chimes/10.0))
             coins = self.change_currency("shem", shemful_user, "coin", lambda x: x+coindelta)
             self.save_only()
             await self.client.send_message(channel,\
@@ -256,7 +256,7 @@ class Honker:
                 if random.randint(0, 5) == 0:
                     coindelta = 300
                     msg = "Lucky! "
-                coindelta = int(coindelta * (1 + chimes/5.0))
+                coindelta = int(coindelta * (1 + chimes/10.0))
                 coins = self.change_currency("shem", shemful_user, "coin", lambda x: x+coindelta)
                 self.save_only()
                 await self.client.send_message(message.channel,\
