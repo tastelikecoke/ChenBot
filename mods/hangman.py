@@ -139,7 +139,7 @@ class Hangman:
                 l = list(self.cleared)
                 l[i] = " "
                 self.cleared = "".join(l)
-        await self.sendMessage(self.channel, discord.Embed(title="Hangman", description="Best Girl Hangman begins!\n{0}\nHP: 100\nWho is this best girl?".format(self.cleared)))
+        await self.sendMessage(self.channel, discord.Embed(title="Hangman", description="Best Girl Hangman begins!\n{0}\nHP: 100\nWho is this best girl? type a letter to guess!".format(self.cleared)))
 
     async def next(self, letter, author):
         if len(letter) != 1:
@@ -161,9 +161,9 @@ class Hangman:
         
         if hits == 0:
             self.health -= 30
-            await self.sendMessage(self.channel, discord.Embed(title="Hangman", description="No letters match...\n{0}\nHP: {1}. 30 damage.".format(self.cleared.upper(), self.health)))
+            await self.sendMessage(self.channel, discord.Embed(title="Hangman", description="No letters match...\n{0}\nHP: {1}. 30 damage. type a letter to guess!".format(self.cleared.upper(), self.health)))
         else:
-            await self.sendMessage(self.channel, discord.Embed(title="Hangman", description="A match!\n{0}\nHP: {1}.".format(self.cleared.upper(), self.health)))
+            await self.sendMessage(self.channel, discord.Embed(title="Hangman", description="A match!\n{0}\nHP: {1}. type a letter to guess!".format(self.cleared.upper(), self.health)))
 
         if self.health <= 0:
             await self.end()
