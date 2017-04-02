@@ -14,6 +14,7 @@ class Hangman:
     shemful_user = ""
     cleared = ""
     word = ""
+    usedletters = ""
     health = 0
 
     words = [
@@ -36,7 +37,7 @@ class Hangman:
         "Totsuka Saika",
         "Ebina Hina",
         "Isshiki Iroha",
-        "Hikigaya Hachiman"
+        "Hikigaya Hachiman",
         "Saber",
         "Tousaka Rin",
         "Archer",
@@ -90,7 +91,7 @@ class Hangman:
         "Quetzalcoatl",
         "Fafnir",
         "Tamura Manami",
-        "Nagato, Yuki",
+        "Nagato Yuki",
         "Megumin",
         "Aqua",
         "Dustiness Ford Lalatina",
@@ -115,6 +116,40 @@ class Hangman:
         "Brando Dio",
         "Katsuki Yuuri",
         "Plisetsky Yuri",
+        "Suzukaze Aoba",
+        "Takimoto Hifumi",
+        "Takanashi Rikka",
+        "Nibutani Shinka",
+        "Dekomori Sanae",
+        "Illyasviel von Einzbern",
+        "Sakura Chiyo",
+        "Trabant Chaika",
+        "Oumae Kumiko",
+        "Kousaka, Reina",
+        "Kawashima, Sapphire",
+        "Katou Hazuki",
+        "Tieria Erde",
+        "Lockon Stratos",
+        "Lee Ranka",
+        "Aioi Yuuko",
+        "Naganohara Mio",
+        "Shinonome Nano",
+        "Izumi Konata",
+        "Anarchy Stocking",
+        "Demon Kneesocks",
+        "Kiyoura Setsuna",
+        "Miyazono Kaori",
+        "Miyamori Aoi",
+        "Yasuhara Ema",
+        "Imai Midori",
+        "Sakaki Shizuka",
+        "Kuroki Tomoko",
+        "Yuuki Asuna",
+        "Kirigiri Kyouko",
+        "Enoshima Junko",
+        "Fujisaki Chihiro",
+        "Fukawa Touko",
+        "Maizono Sayaka",
     ]
 
     def __init__(self, sendMessageFunc):
@@ -133,9 +168,12 @@ class Hangman:
         self.cleared = "–" * len(random_word)
         self.word = random_word
         self.health = 100
+        self.usedletters = ""
 
         for i in range(len(self.word)):
-            if self.word[i] == " ":
+            if ord('a') <= ord(self.word[i].lower()) and ord(self.word[i].lower()) <= ord('z'):
+                pass
+            else:
                 l = list(self.cleared)
                 l[i] = " "
                 self.cleared = "".join(l)
@@ -144,11 +182,18 @@ class Hangman:
     async def next(self, letter, author):
         if len(letter) != 1:
             return
+            
         letter = letter.lower()
+        if ord('a') <= ord(letter) and ord(letter) <= ord('z'):
+            pass
+        else:
+            return
         shemful_user = author.name + "#" + author.discriminator
         
         hits = 0
         left = 0
+
+        self.usedletters += letter.upper()
 
         for i in range(len(self.word)):
             if letter[0] == self.word.lower()[i]:
@@ -161,13 +206,16 @@ class Hangman:
         
         if hits == 0:
             self.health -= 30
-            await self.sendMessage(self.channel, discord.Embed(title="Hangman", description="No letters match...\n{0}\nHP: {1}. 30 damage. type a letter to guess!".format(self.cleared.upper(), self.health)))
-        else:
-            await self.sendMessage(self.channel, discord.Embed(title="Hangman", description="A match!\n{0}\nHP: {1}. type a letter to guess!".format(self.cleared.upper(), self.health)))
+            
+            if self.health <= 0:
+                await self.end()
+                await self.sendMessage(self.channel, discord.Embed(title="Hangman", description="Your best girl died. It's:\n{0}".format(self.word)))
+                return
 
-        if self.health <= 0:
-            await self.end()
-            await self.sendMessage(self.channel, discord.Embed(title="Hangman", description="Your best girl died. It's:\n{0}".format(self.word)))
+            await self.sendMessage(self.channel, discord.Embed(title="Hangman", description="No letters match...\n{0}\nHP: {1}. 30 damage.\nUsed: {2}, type a letter to guess!".format(self.cleared.upper(), self.health, self.usedletters)))
+
+        else:
+            await self.sendMessage(self.channel, discord.Embed(title="Hangman", description="A match!\n{0}\nHP: {1}.\nUsed: {2}, type a letter to guess!".format(self.cleared.upper(), self.health, self.usedletters)))
 
         if left == 0:
             await self.end()
