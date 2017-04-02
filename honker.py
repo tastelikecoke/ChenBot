@@ -92,7 +92,7 @@ class Honker:
 
     async def addCoinsFunc(self, channel, shemful_user):
         if shemful_user != "":
-            coindelta = 600
+            coindelta = 500
             chimes = self.change_currency("shem", shemful_user, "chime", lambda x: x)
             coindelta = int(coindelta * (1 + chimes/5.0))
             coins = self.change_currency("shem", shemful_user, "coin", lambda x: x+coindelta)

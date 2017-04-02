@@ -37,6 +37,35 @@ class Hangman:
         "Ebina Hina",
         "Isshiki Iroha",
         "Hikigaya Hachiman"
+        "Saber",
+        "Tousaka Rin",
+        "Archer",
+        "Gilgamesh",
+        "Kotomine Kirei",
+        "Matou Sakura",
+        "Ayase Eli",
+        "Hoshizora Rin",
+        "Koizumi Hanayo",
+        "Kousaka Honoka",
+        "Minami Kotori",
+        "Nishikino Maki",
+        "Sonoda Umi",
+        "Toujou Nozomi",
+        "Yazawa Nico",
+        "Suzumiya Haruhi",
+        "Akiyama Mio",
+        "Hirasawa Yui",
+        "Kotobuki Tsumugi",
+        "Nakano Azusa",
+        "Tainaka Ritsu",
+        "Rem",
+        "Ram",
+        "Emilia",
+        "Argail Felix",
+        "Natsuki Subaru",
+        "Beatrice",
+        "Felt",
+        "Joseph Joestar",
     ]
 
     def __init__(self, sendMessageFunc):
@@ -93,7 +122,7 @@ class Hangman:
 
         if left == 0:
             await self.end()
-            await self.sendMessage(self.channel, discord.Embed(title="Hangman", description="Your best girl lives! It's\n{0}".format(self.cleared.upper())))
+            await self.sendMessage(self.channel, discord.Embed(title="Hangman", description="Your best girl lives! It's\n{0}".format(self.cleared)))
             await self.addCoinsFunc(self.channel, shemful_user)
 
 
