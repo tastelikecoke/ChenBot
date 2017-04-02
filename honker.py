@@ -10,7 +10,7 @@ import datetime
 import operator
 import urllib
 from PIL import Image, ImageFont, ImageDraw
-from mods import lexicant, eroge
+from mods import lexicant, eroge, hangman
 
 class Honker:
     """ command holder """
@@ -22,6 +22,7 @@ class Honker:
         self.client = None
         self.lexicant = lexicant.Lexicant(None)
         self.eroge = eroge.Eroge(None)
+        self.hangman = hangman.Hangman(None)
         self.status_report = ""
         self.dailies = []
         self.current_done_day = ""
@@ -61,6 +62,8 @@ class Honker:
         self.client = client
         self.lexicant.sendMessageFunc = self.client.send_message
         self.eroge.sendMessageFunc = self.client.send_message
+        self.hangman.sendMessageFunc = lambda x, y: self.client.send_message(x, embed=y)
+        self.hangman.addCoinsFunc = self.addCoinsFunc
 
     async def clock(self):
         channel = self.greet_channel
@@ -86,6 +89,16 @@ class Honker:
 
         if len(self.status_report) > 9000:
             self.status_report = self.status_report[5000:]
+
+    async def addCoinsFunc(self, channel, shemful_user):
+        if shemful_user != "":
+            coindelta = 600
+            chimes = self.change_currency("shem", shemful_user, "chime", lambda x: x)
+            coindelta = int(coindelta * (1 + chimes/5.0))
+            coins = self.change_currency("shem", shemful_user, "coin", lambda x: x+coindelta)
+            self.save_only()
+            await self.client.send_message(channel,\
+                "that gets you {0} coins! {1} now has {2:.1f} shem coins".format(coindelta, shemful_user, coins))
 
     def change_currency(self, shem, shemful_user, currency, function):
         if shem not in self.data:
@@ -595,7 +608,10 @@ class Honker:
             await self.eroge.begin(message.channel)
         elif chen_command.startswith("eroge end"):
             await self.eroge.end()
-
+        
+        elif chen_command.startswith("hangman"):
+            await self.hangman.begin(message.channel)
+        
         # lex parts
         elif chen_command.startswith("lex help"):
             await self.client.send_message(message.channel,\
@@ -614,6 +630,8 @@ class Honker:
             await self.lexicant.append(message.content)
         if self.eroge.state == "game" and message.channel == self.eroge.channel:
             await self.eroge.next(message.content)
+        if self.hangman.state == "game" and message.channel == self.hangman.channel:
+            await self.hangman.next(message.content, message.author)
         
         if self.police_channel is not None and message.channel == self.police_channel:
             if len(message.attachments) > 0:
