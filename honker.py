@@ -82,8 +82,9 @@ class Honker:
                     "🎊 Happy birthday {0} 🎆".format(celebrant))
                 self.status_report += "{0}: {1} was greeted\n".format(now, celebrant)
             else:
-                self.dailies = []
                 self.status_report += "{0}: dailies was cleared\n".format(now)
+            
+            self.dailies = []
         else:
             self.status_report += "{0}: nothing\n".format(now)
 

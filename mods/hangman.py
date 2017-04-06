@@ -197,10 +197,12 @@ class Hangman:
 
         for i in range(len(self.word)):
             if letter[0] == self.word.lower()[i]:
+                if self.cleared[i] != letter[0]:
+                    hits += 1
                 l = list(self.cleared)
                 l[i] = self.word[i]
                 self.cleared = "".join(l)
-                hits += 1
+
             elif self.cleared[i] == "–":
                 left += 1
         
@@ -208,7 +210,7 @@ class Hangman:
             self.health -= 30
             
             if self.health <= 0:
-                await self.end()
+                self.end()
                 await self.sendMessage(self.channel, discord.Embed(title="Hangman", description="Your best girl died. It's:\n{0}".format(self.word)))
                 return
 
@@ -218,11 +220,13 @@ class Hangman:
             await self.sendMessage(self.channel, discord.Embed(title="Hangman", description="A match!\n{0}\nHP: {1}.\nUsed: {2}, type a letter to guess!".format(self.cleared.upper(), self.health, self.usedletters)))
 
         if left == 0:
-            await self.end()
             await self.sendMessage(self.channel, discord.Embed(title="Hangman", description="Your best girl lives! It's\n{0}".format(self.cleared)))
+            if self.state == "none":
+                return
+            self.end()
             await self.addCoinsFunc(self.channel, shemful_user)
 
 
-    async def end(self):
+    def end(self):
         self.position = 0
         self.state = "none"

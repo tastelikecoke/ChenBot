@@ -31,6 +31,8 @@ class Lexicant:
         await self.sendMessage(self.channel, "start saying words")
 
     async def append(self, word):
+        if self.state != "game":
+            return
         if len(word) == 0:
             await self.sendMessage(self.channel, "no game.")
             return
