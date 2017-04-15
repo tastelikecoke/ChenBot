@@ -150,6 +150,22 @@ class Hangman:
         "Fujisaki Chihiro",
         "Fukawa Touko",
         "Maizono Sayaka",
+        "Bernie Sanders",
+        "Donald Trump",
+        "Adolf Hitler",
+        "Hillary Clinton",
+        "Barack Obama",
+        "Joe Biden"
+        "Cat",
+        "Ia",
+        "Hatsune Miku",
+        "Kagamine Rin",
+        "Kagamine Len",
+        "Megpoid Gumi",
+        "Megurine Luka",
+        "Kaito",
+        "Kizuna Ai",
+        "Mitsuha"
     ]
 
     def __init__(self, sendMessageFunc):
