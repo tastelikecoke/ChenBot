@@ -279,9 +279,9 @@ class Honker:
 
             totalcoins = self.change_currency("shem", shemful_user, "coin", lambda x: x)
             if totalcoins >= 10000:
-                await self.client.send_message(message.channel, "{0} now has {1:.1f} shem coins due to corporate tax (30%).".format(shemful_user, coins))
                 coins = self.change_currency("shem", shemful_user, "coin", lambda x: x*0.70)
-
+                await self.client.send_message(message.channel, "{0} now has {1:.1f} shem coins due to corporate tax (30%).".format(shemful_user, coins))
+                
             if chen_command == "gacha level1":
                 coins = self.change_currency("shem", shemful_user, "coin", lambda x: x)
                 choices = ["kokeshi", "chime", "splash"]
