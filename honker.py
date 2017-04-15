@@ -277,6 +277,11 @@ class Honker:
         elif chen_command.startswith("gacha"):
             shemful_user = message.author.name + "#" + message.author.discriminator
 
+            totalcoins = self.change_currency("shem", shemful_user, "coin", lambda x: x)
+            if totalcoins >= 10000:
+                await self.client.send_message(message.channel, "{0} now has {1:.1f} shem coins due to corporate tax (30%).".format(shemful_user, coins))
+                coins = self.change_currency("shem", shemful_user, "coin", lambda x: x*0.70)
+
             if chen_command == "gacha level1":
                 coins = self.change_currency("shem", shemful_user, "coin", lambda x: x)
                 choices = ["kokeshi", "chime", "splash"]
@@ -412,7 +417,7 @@ class Honker:
                     await self.client.send_message(message.channel, "Not enough coins. you need 5,000,000,000")
                     getted = ""
                 else:
-                    coins = self.change_currency("shem", shemful_user, "coin", lambda x: x-500)
+                    coins = self.change_currency("shem", shemful_user, "coin", lambda x: x-5000000000)
 
                 if getted == "japan":
                     await self.addCoinsFunc(message.channel, shemful_user, getted, "🗾", amount=1, flavor=" Japan(🗾) is a freaking nation. ")
