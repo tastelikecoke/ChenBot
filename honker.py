@@ -304,14 +304,33 @@ class Honker:
 
         elif chen_command.startswith("gacha"):
             shemful_user = message.author.name + "#" + message.author.discriminator
+            
+            chimes = self.change_currency("shem", shemful_user, "chime", lambda x: x)
+            candles = self.change_currency("shem", shemful_user, "candle", lambda x: x)
+            rosaries = self.change_currency("shem", shemful_user, "rosary", lambda x: x)
+            knifes = self.change_currency("shem", shemful_user, "knife", lambda x: x)
+            lanterns = self.change_currency("shem", shemful_user, "lantern", lambda x: x)
+            fdelta = self.find_delta(chimes, candles, rosaries, knifes, lanterns)
+
             if chen_command == "gacha level1":
                 coins = self.change_currency("shem", shemful_user, "coin", lambda x: x)
-                getted = random.choice(["kokeshi", "chime"])
+                choices = ["kokeshi", "kokeshi", "chime", "splash"]
+                if fdelta <= 3.0:
+                    choices.append("chime")
+                    choices.append("chime")
+                    choices.append("chime")
+                    choices.append("chime")
+
+                getted = random.choice(choices)
                 if coins < 500:
                     await self.client.send_message(message.channel, "Not enough coins")
                     getted = ""
                 else:
                     coins = self.change_currency("shem", shemful_user, "coin", lambda x: x-500)
+
+                if getted == "splash":
+                    await self.addCoinsFunc(message.channel, shemful_user, getted, "💦", amount=1, flavor=" splash(💦) does nothing. ")
+                    await self.client.send_message(message.channel, "{0} now has {1:.1f} shem coins.".format(shemful_user, coins))
 
                 if getted == "kokeshi":
                     await self.addCoinsFunc(message.channel, shemful_user, getted, "🎎", amount=1, flavor=" kokeshi(🎎) does nothing. ")
@@ -323,12 +342,13 @@ class Honker:
 
             elif chen_command == "gacha level2":
                 coins = self.change_currency("shem", shemful_user, "coin", lambda x: x)
-                getted = random.choice(["kokeshi", "kokeshi", "kokeshi", "candle", "candle", "candle", "cat", "dog", "rat", "malaysian"])
+                getted = random.choice(["kokeshi", "kokeshi", "kokeshi", "candle", "candle", "candle", "candle", "cat", "dog", "rat", "malaysian"])
                 if coins < 5000:
                     await self.client.send_message(message.channel, "Not enough coins. needs 5,000")
                     getted = ""
                 else:
                     coins = self.change_currency("shem", shemful_user, "coin", lambda x: x-5000)
+                
                 if getted == "kokeshi":
                     await self.addCoinsFunc(message.channel, shemful_user, getted, "🎎", amount=1, flavor=" kokeshi(🎎) does nothing. ")
                     await self.client.send_message(message.channel, "{0} now has {1:.1f} shem coins.".format(shemful_user, coins))
@@ -355,7 +375,7 @@ class Honker:
 
             elif chen_command == "gacha level3":
                 coins = self.change_currency("shem", shemful_user, "coin", lambda x: x)
-                getted = random.choice(["kokeshi", "kokeshi", "kokeshi", "rosary", "rosary", "rosary", "harambe", "bear", "freedom"])
+                getted = random.choice(["kokeshi", "kokeshi", "kokeshi", "rosary", "rosary", "rosary", "rosary", "rosary", "harambe", "bear", "freedom"])
                 if coins < 50000:
                     await self.client.send_message(message.channel, "Not enough coins. Needs 50,000")
                     getted = ""
@@ -384,7 +404,7 @@ class Honker:
 
             elif chen_command == "gacha level4":
                 coins = self.change_currency("shem", shemful_user, "coin", lambda x: x)
-                getted = random.choice(["splash", "splash", "splash", "knife", "knife", "knife", "serval", "megumin", "penguin", "toki", "owl", "kaban"])
+                getted = random.choice(["splash", "splash", "splash", "knife", "knife", "knife", "knife", "knife", "serval", "megumin", "penguin", "toki", "owl", "kaban"])
                 if coins < 500000:
                     await self.client.send_message(message.channel, "Not enough coins. Needs 500,000")
                     getted = ""
