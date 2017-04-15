@@ -63,14 +63,13 @@ class Chen:
             sys.stdout.flush()
             honker.bind_client(self.client)
             await honker.ask(message)
+            await self.clock()
 
         self.client.run(self.secrets["token"])
 
     async def clock(self):
-        while True:
-            for honker in self.honkers:
-                await self.honkers[honker].clock()
-            await asyncio.sleep(60*15)
+        for honker in self.honkers:
+            await self.honkers[honker].clock()
 
     def load(self):
         """ load datas """

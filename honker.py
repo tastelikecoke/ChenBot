@@ -92,31 +92,14 @@ class Honker:
         if len(self.status_report) > 9000:
             self.status_report = self.status_report[5000:]
 
-    def find_delta(self, chimes=0, candles=0, rosaries=0, knifes=0, lanterns=0):
-        multiplier = 1.0
-        multiplier *= math.sqrt(1 + chimes)
-        multiplier *= math.sqrt(1 + 3*candles)
-        multiplier *= math.sqrt(1 + 9*rosaries)
-        multiplier *= math.sqrt(1 + 27*knifes)
-        multiplier *= math.sqrt(1 + 81*lanterns)
-        return multiplier
-
-    async def addCoinsFunc(self, channel, shemful_user, cointype="coin", emoji="coin", amount=300, flavor=""):
+    async def addCoinsFunc(self, channel, shemful_user, cointype="coin", emoji="coin", amount=500, flavor=""):
         if shemful_user != "":
             coindelta = amount
-            chimes = self.change_currency("shem", shemful_user, "chime", lambda x: x)
-            candles = self.change_currency("shem", shemful_user, "candle", lambda x: x)
-            rosaries = self.change_currency("shem", shemful_user, "rosary", lambda x: x)
-            knifes = self.change_currency("shem", shemful_user, "knife", lambda x: x)
-            lanterns = self.change_currency("shem", shemful_user, "lantern", lambda x: x)
-            fdelta = self.find_delta(chimes, candles, rosaries, knifes, lanterns)
-
             if cointype == "coin":
-                coindelta = coindelta * fdelta
                 coins = self.change_currency("shem", shemful_user, cointype, lambda x: x+coindelta)
                 self.save_only()
                 await self.client.send_message(channel,\
-                    "that gets you {0:.1f} coins ({1}% bonus)! {2} now has {3:.1f} shem coins".format(coindelta, int(fdelta*100), shemful_user, coins))
+                    "that gets you {0:.1f} coins! {1} now has {2:.1f} shem coins".format(coindelta, shemful_user, coins))
 
             else:
                 currs = self.change_currency("shem", shemful_user, cointype, lambda x: x+coindelta)
@@ -148,25 +131,21 @@ class Honker:
                 matcher3 = re.match(r".*\'(\w+\#\d+) guessed a letter.*", embed)
                 if matcher1:
                     shemful_user = matcher1.group(1)
-                    coindelta = 600
+                    coindelta = 5000
                 if matcher3:
                     shemful_user = matcher3.group(1)
                     coindelta = 20
-                
-                chimes = self.change_currency("shem", shemful_user, "chime", lambda x: x)
-                candles = self.change_currency("shem", shemful_user, "candle", lambda x: x)
-                rosaries = self.change_currency("shem", shemful_user, "rosary", lambda x: x)
-                knifes = self.change_currency("shem", shemful_user, "knife", lambda x: x)
-                lanterns = self.change_currency("shem", shemful_user, "lantern", lambda x: x)
-                fdelta = self.find_delta(chimes, candles, rosaries, knifes, lanterns)
-
-                coindelta = coindelta * fdelta
                     
                 if shemful_user != "": 
+                    
                     coins = self.change_currency("shem", shemful_user, "coin", lambda x: x+coindelta)
                     self.save_only()
                     await self.client.send_message(message.channel,\
-                        "that gets you {0:.1f} coins ({1}% bonus)! {2} now has {3:.1f} shem coins".format(coindelta, int(fdelta*100), shemful_user, coins))
+                        "that gets you {0:.1f} coins! {1} now has {2:.1f} shem coins".format(coindelta, shemful_user, coins))
+                        
+                    loves = self.change_currency("shem", shemful_user, "love", lambda x: x+1)
+                    await self.client.send_message(message.channel,\
+                        "that also gets you {0:.1f} love! {1} now has {2:.1f} ❤️".format(1, shemful_user, loves))
 
         chen_command = ""
         matcher = re.match(self.prefix + r"(.+)", message.content)
@@ -278,24 +257,17 @@ class Honker:
         elif chen_command.startswith("daily"):
             shemful_user = message.author.name + "#" + message.author.discriminator
             coins = 0
-            coindelta = 50
-            chimes = self.change_currency("shem", shemful_user, "chime", lambda x: x)
-            candles = self.change_currency("shem", shemful_user, "candle", lambda x: x)
-            rosaries = self.change_currency("shem", shemful_user, "rosary", lambda x: x)
-            knifes = self.change_currency("shem", shemful_user, "knife", lambda x: x)
-            lanterns = self.change_currency("shem", shemful_user, "lantern", lambda x: x)
-            fdelta = self.find_delta(chimes, candles, rosaries, knifes, lanterns)
+            coindelta = 500
 
             msg = ""
             if shemful_user not in self.dailies:
                 if random.randint(0, 5) == 0:
-                    coindelta = 300
+                    coindelta = 2000
                     msg = "Lucky! "
-                coindelta = coindelta * fdelta
                 coins = self.change_currency("shem", shemful_user, "coin", lambda x: x+coindelta)
                 self.save_only()
                 await self.client.send_message(message.channel,\
-                    "You gained {0:.1f} coins ({1}% bonus)!\n{2}{3} now has {4:.1f} shem coins".format(coindelta, int(fdelta*100), msg, shemful_user, coins))
+                    "You gained {0:.1f} coins!\n{1}{2} now has {3:.1f} shem coins".format(coindelta, msg, shemful_user, coins))
                 self.dailies.append(shemful_user)
             else:
                 coins = self.change_currency("shem", shemful_user, "coin", lambda x: x)
@@ -304,22 +276,10 @@ class Honker:
 
         elif chen_command.startswith("gacha"):
             shemful_user = message.author.name + "#" + message.author.discriminator
-            
-            chimes = self.change_currency("shem", shemful_user, "chime", lambda x: x)
-            candles = self.change_currency("shem", shemful_user, "candle", lambda x: x)
-            rosaries = self.change_currency("shem", shemful_user, "rosary", lambda x: x)
-            knifes = self.change_currency("shem", shemful_user, "knife", lambda x: x)
-            lanterns = self.change_currency("shem", shemful_user, "lantern", lambda x: x)
-            fdelta = self.find_delta(chimes, candles, rosaries, knifes, lanterns)
 
             if chen_command == "gacha level1":
                 coins = self.change_currency("shem", shemful_user, "coin", lambda x: x)
-                choices = ["kokeshi", "kokeshi", "chime", "splash"]
-                if fdelta <= 3.0:
-                    choices.append("chime")
-                    choices.append("chime")
-                    choices.append("chime")
-                    choices.append("chime")
+                choices = ["kokeshi", "chime", "splash"]
 
                 getted = random.choice(choices)
                 if coins < 500:
@@ -337,24 +297,24 @@ class Honker:
                     await self.client.send_message(message.channel, "{0} now has {1:.1f} shem coins.".format(shemful_user, coins))
     
                 if getted == "chime":
-                    await self.addCoinsFunc(message.channel, shemful_user, getted, "🎐", amount=1, flavor=" chime(🎐) increases coin generation inverse-quadratically. ")
+                    await self.addCoinsFunc(message.channel, shemful_user, getted, "🎐", amount=1, flavor=" chime(🎐) makes you lucky. ")
                     await self.client.send_message(message.channel, "{0} now has {1:.1f} shem coins.".format(shemful_user, coins))
 
             elif chen_command == "gacha level2":
                 coins = self.change_currency("shem", shemful_user, "coin", lambda x: x)
-                getted = random.choice(["kokeshi", "kokeshi", "kokeshi", "candle", "candle", "candle", "candle", "cat", "dog", "rat", "malaysian"])
-                if coins < 5000:
-                    await self.client.send_message(message.channel, "Not enough coins. needs 5,000")
+                getted = random.choice(["kokeshi", "candle", "cat", "dog", "rat", "malaysian"])
+                if coins < 1000:
+                    await self.client.send_message(message.channel, "Not enough coins. needs 1,000")
                     getted = ""
                 else:
-                    coins = self.change_currency("shem", shemful_user, "coin", lambda x: x-5000)
+                    coins = self.change_currency("shem", shemful_user, "coin", lambda x: x-1000)
                 
                 if getted == "kokeshi":
                     await self.addCoinsFunc(message.channel, shemful_user, getted, "🎎", amount=1, flavor=" kokeshi(🎎) does nothing. ")
                     await self.client.send_message(message.channel, "{0} now has {1:.1f} shem coins.".format(shemful_user, coins))
                 
                 if getted == "candle":
-                    await self.addCoinsFunc(message.channel, shemful_user, getted, "🕯", amount=1, flavor=" candle(🕯) increases coin generation inverse-quadratically. ")
+                    await self.addCoinsFunc(message.channel, shemful_user, getted, "🕯", amount=1, flavor=" candle(🕯) lights up things. ")
                     await self.client.send_message(message.channel, "{0} now has {1:.1f} shem coins.".format(shemful_user, coins))
                 
                 if getted == "cat":
@@ -375,19 +335,19 @@ class Honker:
 
             elif chen_command == "gacha level3":
                 coins = self.change_currency("shem", shemful_user, "coin", lambda x: x)
-                getted = random.choice(["kokeshi", "kokeshi", "kokeshi", "rosary", "rosary", "rosary", "rosary", "rosary", "harambe", "bear", "freedom"])
-                if coins < 50000:
-                    await self.client.send_message(message.channel, "Not enough coins. Needs 50,000")
+                getted = random.choice(["kokeshi", "rosary", "harambe", "bear", "freedom"])
+                if coins < 1500:
+                    await self.client.send_message(message.channel, "Not enough coins. Needs 1,500")
                     getted = ""
                 else:
-                    coins = self.change_currency("shem", shemful_user, "coin", lambda x: x-50000)
+                    coins = self.change_currency("shem", shemful_user, "coin", lambda x: x-1500)
 
                 if getted == "kokeshi":
                     await self.addCoinsFunc(message.channel, shemful_user, getted, "🎎", amount=1, flavor=" kokeshi(🎎) does nothing. ")
                     await self.client.send_message(message.channel, "{0} now has {1:.1f} shem coins.".format(shemful_user, coins))
     
                 if getted == "rosary":
-                    await self.addCoinsFunc(message.channel, shemful_user, getted, "📿", amount=1, flavor=" rosary(📿) increases coin generation inverse-quadratically. ")
+                    await self.addCoinsFunc(message.channel, shemful_user, getted, "📿", amount=1, flavor=" rosary(📿) increases your holiness. ")
                     await self.client.send_message(message.channel, "{0} now has {1:.1f} shem coins.".format(shemful_user, coins))
 
                 if getted == "harambe":
@@ -404,19 +364,19 @@ class Honker:
 
             elif chen_command == "gacha level4":
                 coins = self.change_currency("shem", shemful_user, "coin", lambda x: x)
-                getted = random.choice(["splash", "splash", "splash", "knife", "knife", "knife", "knife", "knife", "serval", "megumin", "penguin", "toki", "owl", "kaban"])
-                if coins < 500000:
-                    await self.client.send_message(message.channel, "Not enough coins. Needs 500,000")
+                getted = random.choice(["splash", "knife", "serval", "megumin", "penguin", "toki", "owl", "kaban"])
+                if coins < 2000:
+                    await self.client.send_message(message.channel, "Not enough coins. Needs 2,000")
                     getted = ""
                 else:
-                    coins = self.change_currency("shem", shemful_user, "coin", lambda x: x-500000)
+                    coins = self.change_currency("shem", shemful_user, "coin", lambda x: x-2000)
 
                 if getted == "splash":
                     await self.addCoinsFunc(message.channel, shemful_user, getted, "💦", amount=1, flavor=" splash(💦) does nothing. ")
                     await self.client.send_message(message.channel, "{0} now has {1:.1f} shem coins.".format(shemful_user, coins))
     
                 if getted == "knife":
-                    await self.addCoinsFunc(message.channel, shemful_user, getted, "🔪", amount=1, flavor=" knife(🔪) increases coin generation inverse-quadratically. ")
+                    await self.addCoinsFunc(message.channel, shemful_user, getted, "🔪", amount=1, flavor=" knife(🔪) is very sharp. ")
                     await self.client.send_message(message.channel, "{0} now has {1:.1f} shem coins.".format(shemful_user, coins))
 
                 if getted == "serval":
@@ -442,26 +402,32 @@ class Honker:
                 if getted == "kaban":
                     await self.addCoinsFunc(message.channel, shemful_user, getted, "👒", amount=1, flavor="Kaban-chan(👒) is your friend. ")
                     await self.client.send_message(message.channel, "{0} now has {1:.1f} shem coins.".format(shemful_user, coins))
-                    
+        
+            elif chen_command == "gacha level5":
+                coins = self.change_currency("shem", shemful_user, "coin", lambda x: x)
+                choices = ["japan"]
+
+                getted = random.choice(choices)
+                if coins < 5000000000:
+                    await self.client.send_message(message.channel, "Not enough coins. you need 5,000,000,000")
+                    getted = ""
+                else:
+                    coins = self.change_currency("shem", shemful_user, "coin", lambda x: x-500)
+
+                if getted == "japan":
+                    await self.addCoinsFunc(message.channel, shemful_user, getted, "🗾", amount=1, flavor=" Japan(🗾) is a freaking nation. ")
+                    await self.client.send_message(message.channel, "{0} now has {1:.1f} shem coins.".format(shemful_user, coins))
 
             else:
                 await self.client.send_message(message.channel,\
-                    "type '{0}gacha level1' or '{0}gacha level2' etc. to roll! uses up 50x10^level coins.".format(self.prefix))
+                    "type '{0}gacha level1' or '{0}gacha level2' etc. to roll! uses up 500 x level# coins. There are 5 levels.".format(self.prefix))
                 await self.client.send_message(message.channel,\
-                    "type '{0} inventory' to check your inventory.".format(self.prefix))
+                    "type '{0} inventory' to check your inventory.\ncoin bonuses have been killed.".format(self.prefix))
         
 
         elif chen_command.startswith("inventory"):
             shemful_user = message.author.name + "#" + message.author.discriminator
             string_out = ""
-
-            
-            chimes = self.change_currency("shem", shemful_user, "chime", lambda x: x)
-            candles = self.change_currency("shem", shemful_user, "candle", lambda x: x)
-            rosaries = self.change_currency("shem", shemful_user, "rosary", lambda x: x)
-            knifes = self.change_currency("shem", shemful_user, "knife", lambda x: x)
-            lanterns = self.change_currency("shem", shemful_user, "lantern", lambda x: x)
-            fdelta = self.find_delta(chimes, candles, rosaries, knifes, lanterns)
 
             dicts = {
                 "coin": "coin",
@@ -480,8 +446,10 @@ class Honker:
                 "splash":"💦",
                 "serval":"🐱",
                 "megumin":"💥",
+                "japan": "🗾",
                 "penguin":"🐧",
                 "toki":"🐦",
+                "love":"❤️",
                 "owl":"🦉"
             }
 
@@ -490,7 +458,6 @@ class Honker:
                 currs = self.change_currency("shem", shemful_user, key, lambda x: x)
                 if currs != 0:
                     string_out += "{0:.1f} {1}\n".format(currs, dicts[key])
-            string_out += "{0}% total coin bonus\n".format(int(fdelta*100))
 
             await self.client.send_message(message.channel, string_out)
 
@@ -501,11 +468,11 @@ class Honker:
             matcher = re.match(r"bestgirl ([a-zA-Z 0-9]+)", chen_command)
             if matcher:
                 girl = matcher.group(1)
-                coins = self.change_currency("shem", shemful_user, "coin", lambda x: x)
-                if coins < 500:
-                    await self.client.send_message(message.channel, "Not enough coins")
+                coins = self.change_currency("shem", shemful_user, "love", lambda x: x)
+                if coins < 1:
+                    await self.client.send_message(message.channel, "Not enough love")
                 else:
-                    coins = self.change_currency("shem", shemful_user, "coin", lambda x: x-500)
+                    coins = self.change_currency("shem", shemful_user, "love", lambda x: x-1)
                     bestkey = "bestgirl"
                     if bestkey not in self.data:
                         self.data[bestkey] = {}
@@ -532,7 +499,7 @@ class Honker:
                             listing += "{0}) {1}\n".format(i+1, sorted_girls[i][0])
 
                 await self.client.send_message(message.channel,\
-                    "{0}\ntype '{1}bestgirl <xxx>' to also vote. costs 500 coins".format(listing, self.prefix))
+                    "{0}\ntype '{1}bestgirl <xxx>' to also vote. costs 1 love".format(listing, self.prefix))
 
 
         elif chen_command.startswith("tz"):
