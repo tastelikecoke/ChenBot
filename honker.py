@@ -94,11 +94,11 @@ class Honker:
 
     def find_delta(self, chimes=0, candles=0, rosaries=0, knifes=0, lanterns=0):
         multiplier = 1.0
-        multiplier *= math.log(2 + chimes, 2)
-        multiplier *= math.log(3 + candles, 3)
-        multiplier *= math.log(4 + rosaries, 4)
-        multiplier *= math.log(5 + knifes, 5)
-        multiplier *= math.log(6 + lanterns, 6)
+        multiplier *= math.sqrt(1 + chimes)
+        multiplier *= math.sqrt(1 + 3*candles)
+        multiplier *= math.sqrt(1 + 9*rosaries)
+        multiplier *= math.sqrt(1 + 27*knifes)
+        multiplier *= math.sqrt(1 + 81*lanterns)
         return multiplier
 
     async def addCoinsFunc(self, channel, shemful_user, cointype="coin", emoji="coin", amount=300, flavor=""):
@@ -310,14 +310,15 @@ class Honker:
                 if coins < 500:
                     await self.client.send_message(message.channel, "Not enough coins")
                     getted = ""
-                coins = self.change_currency("shem", shemful_user, "coin", lambda x: x-500)
+                else:
+                    coins = self.change_currency("shem", shemful_user, "coin", lambda x: x-500)
 
                 if getted == "kokeshi":
                     await self.addCoinsFunc(message.channel, shemful_user, getted, "🎎", amount=1, flavor=" kokeshi(🎎) does nothing. ")
                     await self.client.send_message(message.channel, "{0} now has {1:.1f} shem coins.".format(shemful_user, coins))
     
                 if getted == "chime":
-                    await self.addCoinsFunc(message.channel, shemful_user, getted, "🎐", amount=1, flavor=" chime(🎐) increases coin generation inverse-exponentially. ")
+                    await self.addCoinsFunc(message.channel, shemful_user, getted, "🎐", amount=1, flavor=" chime(🎐) increases coin generation inverse-quadratically. ")
                     await self.client.send_message(message.channel, "{0} now has {1:.1f} shem coins.".format(shemful_user, coins))
 
             elif chen_command == "gacha level2":
@@ -326,13 +327,14 @@ class Honker:
                 if coins < 5000:
                     await self.client.send_message(message.channel, "Not enough coins. needs 5,000")
                     getted = ""
-                coins = self.change_currency("shem", shemful_user, "coin", lambda x: x-5000)
+                else:
+                    coins = self.change_currency("shem", shemful_user, "coin", lambda x: x-5000)
                 if getted == "kokeshi":
                     await self.addCoinsFunc(message.channel, shemful_user, getted, "🎎", amount=1, flavor=" kokeshi(🎎) does nothing. ")
                     await self.client.send_message(message.channel, "{0} now has {1:.1f} shem coins.".format(shemful_user, coins))
                 
                 if getted == "candle":
-                    await self.addCoinsFunc(message.channel, shemful_user, getted, "🕯", amount=1, flavor=" candle(🕯) increases coin generation inverse-exponentially. ")
+                    await self.addCoinsFunc(message.channel, shemful_user, getted, "🕯", amount=1, flavor=" candle(🕯) increases coin generation inverse-quadratically. ")
                     await self.client.send_message(message.channel, "{0} now has {1:.1f} shem coins.".format(shemful_user, coins))
                 
                 if getted == "cat":
@@ -357,14 +359,15 @@ class Honker:
                 if coins < 50000:
                     await self.client.send_message(message.channel, "Not enough coins. Needs 50,000")
                     getted = ""
-                coins = self.change_currency("shem", shemful_user, "coin", lambda x: x-50000)
+                else:
+                    coins = self.change_currency("shem", shemful_user, "coin", lambda x: x-50000)
 
                 if getted == "kokeshi":
                     await self.addCoinsFunc(message.channel, shemful_user, getted, "🎎", amount=1, flavor=" kokeshi(🎎) does nothing. ")
                     await self.client.send_message(message.channel, "{0} now has {1:.1f} shem coins.".format(shemful_user, coins))
     
                 if getted == "rosary":
-                    await self.addCoinsFunc(message.channel, shemful_user, getted, "📿", amount=1, flavor=" rosary(📿) increases coin generation inverse-exponentially. ")
+                    await self.addCoinsFunc(message.channel, shemful_user, getted, "📿", amount=1, flavor=" rosary(📿) increases coin generation inverse-quadratically. ")
                     await self.client.send_message(message.channel, "{0} now has {1:.1f} shem coins.".format(shemful_user, coins))
 
                 if getted == "harambe":
@@ -378,6 +381,48 @@ class Honker:
                 if getted == "freedom":
                     await self.addCoinsFunc(message.channel, shemful_user, getted, "🦅", amount=1, flavor="🦅 FREEDOM 🦅. ")
                     await self.client.send_message(message.channel, "{0} now has {1:.1f} shem coins.".format(shemful_user, coins))
+
+            elif chen_command == "gacha level4":
+                coins = self.change_currency("shem", shemful_user, "coin", lambda x: x)
+                getted = random.choice(["splash", "splash", "splash", "knife", "knife", "knife", "serval", "megumin", "penguin", "toki", "owl", "kaban"])
+                if coins < 500000:
+                    await self.client.send_message(message.channel, "Not enough coins. Needs 500,000")
+                    getted = ""
+                else:
+                    coins = self.change_currency("shem", shemful_user, "coin", lambda x: x-500000)
+
+                if getted == "splash":
+                    await self.addCoinsFunc(message.channel, shemful_user, getted, "💦", amount=1, flavor=" splash(💦) does nothing. ")
+                    await self.client.send_message(message.channel, "{0} now has {1:.1f} shem coins.".format(shemful_user, coins))
+    
+                if getted == "knife":
+                    await self.addCoinsFunc(message.channel, shemful_user, getted, "🔪", amount=1, flavor=" knife(🔪) increases coin generation inverse-quadratically. ")
+                    await self.client.send_message(message.channel, "{0} now has {1:.1f} shem coins.".format(shemful_user, coins))
+
+                if getted == "serval":
+                    await self.addCoinsFunc(message.channel, shemful_user, getted, "🐱", amount=1, flavor="Serval(🐱) is Tanoshii! ")
+                    await self.client.send_message(message.channel, "{0} now has {1:.1f} shem coins.".format(shemful_user, coins))
+                    
+                if getted == "megumin":
+                    await self.addCoinsFunc(message.channel, shemful_user, getted, "💥", amount=1, flavor=" Megumins(💥) destroy property. ")
+                    await self.client.send_message(message.channel, "{0} now has {1:.1f} shem coins.".format(shemful_user, coins))
+
+                if getted == "toki":
+                    await self.addCoinsFunc(message.channel, shemful_user, getted, "🐦", amount=1, flavor="Crested Ibis(🐦) sings well. ")
+                    await self.client.send_message(message.channel, "{0} now has {1:.1f} shem coins.".format(shemful_user, coins))
+
+                if getted == "penguin":
+                    await self.addCoinsFunc(message.channel, shemful_user, getted, "🐧", amount=1, flavor="Emperor Penguins(🐧) give out idol points. ")
+                    await self.client.send_message(message.channel, "{0} now has {1:.1f} shem coins.".format(shemful_user, coins))
+                
+                if getted == "owl":
+                    await self.addCoinsFunc(message.channel, shemful_user, getted, "🦉", amount=1, flavor="Northern White-faced Owl(🦉) coo-coo. ")
+                    await self.client.send_message(message.channel, "{0} now has {1:.1f} shem coins.".format(shemful_user, coins))
+                
+                if getted == "kaban":
+                    await self.addCoinsFunc(message.channel, shemful_user, getted, "👒", amount=1, flavor="Kaban-chan(👒) is your friend. ")
+                    await self.client.send_message(message.channel, "{0} now has {1:.1f} shem coins.".format(shemful_user, coins))
+                    
 
             else:
                 await self.client.send_message(message.channel,\
@@ -407,9 +452,17 @@ class Honker:
                 "rat":"🐀",
                 "malaysian":"🇲🇾",
                 "rosary":"📿",
+                "candle":"🕯",
+                "knife":"🔪",
                 "harambe":"🦍",
                 "bear":"🐻",
-                "freedom":"🦅"
+                "freedom":"🦅",
+                "splash":"💦",
+                "serval":"🐱",
+                "megumin":"💥",
+                "penguin":"🐧",
+                "toki":"🐦",
+                "owl":"🦉"
             }
 
             for key in dicts.keys():
