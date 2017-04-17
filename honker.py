@@ -144,13 +144,9 @@ class Honker:
                 shemful_user = ""
                 coindelta = 0
                 matcher1 = re.match(r".*Winner.*.*\*\*(\w+\#\d+)\*\*", embed)
-                matcher3 = re.match(r".*\'(\w+\#\d+) guessed a letter.*", embed)
                 if matcher1:
                     shemful_user = matcher1.group(1)
                     coindelta = 5000
-                if matcher3:
-                    shemful_user = matcher3.group(1)
-                    coindelta = 20
                     
                 if shemful_user != "": 
                     

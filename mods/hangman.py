@@ -266,7 +266,7 @@ class Hangman:
             self.cleared = "–" * len(random_word)
             self.word = random_word
             self.usedletters = ""
-            self.health = 100+level*2
+            self.health = 100+level*5
 
         if level >= 20:
             flavor = "Bllyeh-St Gorgollth Cthanghman Cthulhu Shoggoth!"
@@ -274,7 +274,7 @@ class Hangman:
             self.cleared = "–" * len(random_word)
             self.word = random_word
             self.usedletters = ""
-            self.health = 100+level*2
+            self.health = 100+level*4
 
         elif level >= 10:
             flavor = "Best Girl Hangman HARDMODE begins!"
@@ -282,7 +282,7 @@ class Hangman:
             self.cleared = "–" * len(random_word)
             self.word = random_word
             self.usedletters = ""
-            self.health = 100+level*2
+            self.health = 100+level*3
 
         else:
             flavor = "Best Girl Hangman begins!"
@@ -301,7 +301,7 @@ class Hangman:
                 l = list(self.cleared)
                 l[i] = " "
                 self.cleared = "".join(l)
-        await self.sendMessage(self.channel, discord.Embed(title="Hangman", description="{0}\n{1}\nHP: 100\nWho is this best girl? type a letter to guess!".format(flavor, self.cleared)))
+        await self.sendMessage(self.channel, discord.Embed(title="Hangman", description="{0}\n{1}\nHP: {2}\nWho is this best girl? type a letter to guess!".format(flavor, self.cleared, self.health)))
 
     async def next(self, letter, author):
         if len(letter) != 1:
