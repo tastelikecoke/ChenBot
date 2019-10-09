@@ -57,6 +57,8 @@ class Chen:
                 honker = Honker(message.server)
                 honker.load()
                 self.honkers[message.server.id] = honker
+            elif message.author.id == self.client.user.id:
+                print ("selfcest!")
             else:
                 honker = self.honkers[message.server.id]
 
