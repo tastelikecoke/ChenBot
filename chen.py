@@ -57,14 +57,17 @@ class Chen:
                 honker = Honker(message.server)
                 honker.load()
                 self.honkers[message.server.id] = honker
-            elif message.author.id == self.client.user.id:
-                pass # self cest, ignore
             else:
                 honker = self.honkers[message.server.id]
 
             sys.stdout.flush()
             honker.bind_client(self.client)
-            await honker.ask(message)
+
+            if message.author.id == self.client.user.id:
+                pass # self cest, ignore
+            else:
+                await honker.ask(message)
+            
             await self.clock()
 
         self.client.run(self.secrets["token"])
